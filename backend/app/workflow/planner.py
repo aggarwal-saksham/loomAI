@@ -68,7 +68,7 @@ async def _default_llm_call(prompt: str) -> str:
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
     if gemini_key:
-        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+        model = os.getenv("GEMINI_MODEL") or "gemini-3.8-flash"
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json"},
