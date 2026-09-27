@@ -44,3 +44,7 @@ data loss.
 ## 2026-09-27 - Product display name
 Decision: Use lunaAI as the user-facing project name while retaining the existing Cortex references in the specification documents.
 Why: The build request names the product lunaAI, while the supplied PRD, architecture, and design system use Cortex as their original working name. This naming-only choice does not alter scope or architecture.
+
+## 2026-09-27 - Local database location
+Decision: Store the SQLite database at `backend/lunaai.db` and initialize its schema with SQLAlchemy on application startup.
+Why: This keeps the single-process, file-backed development database beside the backend, avoids machine-specific configuration, and follows the SQLite decision in the architecture.

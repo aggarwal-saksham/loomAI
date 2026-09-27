@@ -9,8 +9,8 @@ work scoped to one section at a time rather than jumping around.
 - [x] `.env.example` with required env vars listed
 
 ## 1. Backend — data layer
-- [ ] SQLAlchemy models: Task, WorkflowNode, WorkflowEdge, ResultRow
-- [ ] DB init / migration on startup (SQLite file)
+- [x] SQLAlchemy models: Task, WorkflowNode, WorkflowEdge, ResultRow
+- [x] DB init / migration on startup (SQLite file)
 
 ## 2. Backend — LLM planner
 - [ ] `planner.py`: prompt → DAG JSON via LLM structured output
