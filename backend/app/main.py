@@ -1,9 +1,14 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from dotenv import load_dotenv
 
 from .db import init_db
 from .routes.tasks import router as tasks_router
+
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 @asynccontextmanager

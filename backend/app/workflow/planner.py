@@ -28,6 +28,10 @@ class PlannerValidationError(PlannerError):
     pass
 
 
+class PlannerProviderError(PlannerError):
+    pass
+
+
 LLMCall = Callable[[str], Awaitable[str]]
 
 
@@ -69,11 +73,14 @@ async def _default_llm_call(prompt: str) -> str:
             "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {openai_key}"}
-        async with httpx.AsyncClient(timeout=45) as client:
-            response = await client.post(
-                "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
-            )
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(timeout=45) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions", headers=headers, json=payload
+                )
+                response.raise_for_status()
+        except httpx.HTTPError as error:
+            raise PlannerProviderError(f"OpenAI planner request failed: {error}") from error
         return response.json()["choices"][0]["message"]["content"]
 
     if anthropic_key:
@@ -87,11 +94,14 @@ async def _default_llm_call(prompt: str) -> str:
             "anthropic-version": "2023-06-01",
             "content-type": "application/json",
         }
-        async with httpx.AsyncClient(timeout=45) as client:
-            response = await client.post(
-                "https://api.anthropic.com/v1/messages", headers=headers, json=payload
-            )
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(timeout=45) as client:
+                response = await client.post(
+                    "https://api.anthropic.com/v1/messages", headers=headers, json=payload
+                )
+                response.raise_for_status()
+        except httpx.HTTPError as error:
+            raise PlannerProviderError(f"Anthropic planner request failed: {error}") from error
         return response.json()["content"][0]["text"]
 
     raise PlannerConfigurationError(

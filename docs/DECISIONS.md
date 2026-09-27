@@ -60,3 +60,7 @@ Why: The architecture permits Tavily or SerpAPI. Tavily's search response provid
 ## 2026-09-27 - Product name standardized
 Decision: Standardize the product name as loomAI across application code, documentation, package metadata, and local database naming.
 Why: The project owner selected loomAI as the final product name. This supersedes the earlier lunaAI display-name decision and replaces the original Cortex working name.
+
+## 2026-09-27 - Root environment loading
+Decision: Load the gitignored root `.env` during FastAPI startup with `python-dotenv`.
+Why: The documented local startup command runs from `backend/`, while credentials are kept in the repository root. Explicit loading keeps that command reliable without exposing secrets in source control.
