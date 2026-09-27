@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExtractionOutput",
+  "description": "The shape every row returned by an 'extract' node must match before being written to ResultRow. Validate in code — source_url is non-negotiable.",
+  "type": "object",
+  "required": ["rows"],
+  "properties": {
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fields", "source_url", "confidence"],
+        "properties": {
+          "fields": {
+            "type": "object",
+            "description": "Arbitrary key/value pairs matching the entities_to_extract from the workflow plan, e.g. { \"company_name\": \"...\", \"website\": \"...\" }.",
+            "additionalProperties": true
+          },
+          "source_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Required. Where this row's data was found. A row without this is invalid and must not be persisted."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Model's confidence that the extracted fields are accurate and complete."
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

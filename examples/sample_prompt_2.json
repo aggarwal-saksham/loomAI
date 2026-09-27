@@ -1,0 +1,65 @@
+{
+  "prompt": "Collect open remote DevOps job listings posted this week with salary if available",
+  "expected_planner_output": {
+    "goal": "Collect currently open remote DevOps job listings from this week, including salary when listed.",
+    "entities_to_extract": ["job_title", "company_name", "salary", "location", "posted_date"],
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "source",
+        "label": "RemoteOK: DevOps listings",
+        "config": { "connector": "remoteok", "tags": ["devops"] }
+      },
+      {
+        "id": "n2",
+        "type": "fetch",
+        "label": "Fetch listing details",
+        "config": {}
+      },
+      {
+        "id": "n3",
+        "type": "extract",
+        "label": "Extract job fields",
+        "config": {
+          "fields": ["job_title", "company_name", "salary", "location", "posted_date"]
+        }
+      },
+      {
+        "id": "n4",
+        "type": "clean",
+        "label": "Filter to last 7 days, normalize salary",
+        "config": { "date_field": "posted_date", "max_age_days": 7 }
+      },
+      {
+        "id": "n5",
+        "type": "validate",
+        "label": "Flag listings missing salary",
+        "config": { "required_fields": ["job_title", "company_name"] }
+      },
+      {
+        "id": "n6",
+        "type": "output",
+        "label": "DevOps job listings dataset",
+        "config": {}
+      }
+    ],
+    "edges": [
+      { "from": "n1", "to": "n2" },
+      { "from": "n2", "to": "n3" },
+      { "from": "n3", "to": "n4" },
+      { "from": "n4", "to": "n5" },
+      { "from": "n5", "to": "n6" }
+    ]
+  },
+  "expected_result_row_example": {
+    "fields": {
+      "job_title": "Senior DevOps Engineer",
+      "company_name": "Example Cloud Inc",
+      "salary": "$120,000 - $150,000",
+      "location": "Remote (US)",
+      "posted_date": "2026-09-24"
+    },
+    "source_url": "https://remoteok.com/remote-jobs/example-senior-devops-engineer",
+    "confidence": 0.93
+  }
+}

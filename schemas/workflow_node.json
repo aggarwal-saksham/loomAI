@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WorkflowPlan",
+  "description": "The DAG the LLM planner must output for a given natural-language prompt. Validate every planner response against this schema in code before persisting.",
+  "type": "object",
+  "required": ["goal", "entities_to_extract", "nodes", "edges"],
+  "properties": {
+    "goal": {
+      "type": "string",
+      "description": "One-sentence restatement of what the user wants collected."
+    },
+    "entities_to_extract": {
+      "type": "array",
+      "description": "The fields that should appear on each output row.",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "label", "config"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique within this DAG, e.g. 'n1', 'n2'."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["source", "fetch", "extract", "clean", "validate", "output"]
+          },
+          "label": {
+            "type": "string",
+            "description": "Short human-readable label shown on the node in the UI."
+          },
+          "config": {
+            "type": "object",
+            "description": "Type-specific config, e.g. { \"connector\": \"web_search\", \"query\": \"...\" } for a source node, or { \"fields\": [...] } for an extract node.",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "string", "description": "Source node id." },
+          "to": { "type": "string", "description": "Target node id." }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

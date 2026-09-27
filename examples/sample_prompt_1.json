@@ -1,0 +1,71 @@
+{
+  "prompt": "Find 15 companies that sponsor student hackathons in fintech",
+  "expected_planner_output": {
+    "goal": "Collect a list of companies that sponsor student hackathons focused on fintech.",
+    "entities_to_extract": ["company_name", "website", "why_relevant", "contact_hint"],
+    "nodes": [
+      {
+        "id": "n1",
+        "type": "source",
+        "label": "Search: fintech hackathon sponsors",
+        "config": {
+          "connector": "web_search",
+          "queries": [
+            "fintech hackathon sponsors 2025 2026",
+            "companies sponsoring student fintech hackathons",
+            "fintech company hackathon sponsorship program"
+          ]
+        }
+      },
+      {
+        "id": "n2",
+        "type": "fetch",
+        "label": "Fetch top result pages",
+        "config": { "max_urls_per_query": 8 }
+      },
+      {
+        "id": "n3",
+        "type": "extract",
+        "label": "Extract sponsor details",
+        "config": {
+          "fields": ["company_name", "website", "why_relevant", "contact_hint"]
+        }
+      },
+      {
+        "id": "n4",
+        "type": "clean",
+        "label": "Normalize + dedupe by domain",
+        "config": { "dedupe_on": ["company_name", "website"], "threshold": 0.85 }
+      },
+      {
+        "id": "n5",
+        "type": "validate",
+        "label": "Flag incomplete rows",
+        "config": { "required_fields": ["company_name", "website"] }
+      },
+      {
+        "id": "n6",
+        "type": "output",
+        "label": "Sponsor leads dataset",
+        "config": {}
+      }
+    ],
+    "edges": [
+      { "from": "n1", "to": "n2" },
+      { "from": "n2", "to": "n3" },
+      { "from": "n3", "to": "n4" },
+      { "from": "n4", "to": "n5" },
+      { "from": "n5", "to": "n6" }
+    ]
+  },
+  "expected_result_row_example": {
+    "fields": {
+      "company_name": "Example Fintech Co",
+      "website": "https://example-fintech.com",
+      "why_relevant": "Publicly lists a student hackathon sponsorship program on their careers page.",
+      "contact_hint": "partnerships@example-fintech.com"
+    },
+    "source_url": "https://example-fintech.com/careers/hackathons",
+    "confidence": 0.82
+  }
+}
