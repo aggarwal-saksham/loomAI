@@ -1,4 +1,8 @@
+import asyncio
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from ..db import SessionLocal
@@ -9,6 +13,7 @@ from ..workflow.planner import (
     PlannerError,
     generate_workflow_plan,
 )
+from ..workflow.executor import event_bus, execute_task
 
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
@@ -79,3 +84,30 @@ async def create_task(payload: TaskCreate, db: Session = Depends(get_db)) -> Tas
     db.commit()
     db.refresh(task)
     return serialize_task(task, db)
+
+
+@router.post("/{task_id}/run", status_code=status.HTTP_202_ACCEPTED)
+async def run_task(task_id: str, db: Session = Depends(get_db)) -> dict[str, str]:
+    task = db.get(Task, task_id)
+    if not task:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
+    if task.status == TaskStatus.RUNNING:
+        return {"status": "running"}
+    task.status = TaskStatus.RUNNING
+    db.commit()
+    asyncio.create_task(execute_task(task_id))
+    return {"status": "running"}
+
+
+@router.get("/{task_id}/stream")
+async def stream_task(task_id: str):
+    async def events():
+        queue = event_bus.subscribe(task_id)
+        try:
+            while True:
+                event = await queue.get()
+                yield f"data: {json.dumps(event)}\n\n"
+        finally:
+            event_bus.unsubscribe(task_id, queue)
+
+    return StreamingResponse(events(), media_type="text/event-stream")
