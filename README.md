@@ -6,11 +6,12 @@
 
 ## 🎬 Demo & Tutorial
 
-https://github.com/user-attachments/assets/tutorial_loomAI.mp4
-
-<video src="tutorial_loomAI.mp4" controls="controls" width="100%" poster=""></video>
-
-*(If video doesn't play directly above, click [here to watch tutorial_loomAI.mp4](tutorial_loomAI.mp4))*
+<div align="center">
+  <video src="./tutorial_loomAI.mp4" controls="controls" width="100%" style="max-height: 480px; border-radius: 8px; border: 1px solid #2B3038;">
+    <source src="./tutorial_loomAI.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ---
 
