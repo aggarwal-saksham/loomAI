@@ -56,3 +56,7 @@ Why: Both are economical structured-output-capable defaults for a hackathon work
 ## 2026-09-27 - Search provider selection
 Decision: Implement the permitted web-search connector using Tavily.
 Why: The architecture permits Tavily or SerpAPI. Tavily's search response provides result URLs and content snippets directly, which supports traceable extraction with the smallest connector surface.
+
+## 2026-09-27 - Product name standardized
+Decision: Standardize the product name as loomAI across application code, documentation, package metadata, and local database naming.
+Why: The project owner selected loomAI as the final product name. This supersedes the earlier lunaAI display-name decision and replaces the original Cortex working name.

@@ -1,4 +1,4 @@
-# Architecture — Cortex
+# Architecture — loomAI
 
 This is the source of truth for anything technical. Do not deviate without
 adding an entry to `DECISIONS.md`.

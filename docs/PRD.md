@@ -1,4 +1,4 @@
-# PRD — Cortex: AI-Powered Data Intelligence Platform
+# PRD — loomAI: AI-Powered Data Intelligence Platform
 
 ## Problem
 
@@ -21,7 +21,7 @@ Build a prompt-based AI Data Intelligence Platform that can:
 - Allow users to monitor and manage collection tasks.
 - Maintain workflow and dataset history (revisit past tasks, re-run them).
 
-## Differentiator (why Cortex, not just "an AI scraper")
+## Differentiator (why loomAI, not just "an AI scraper")
 
 The AI's workflow plan is not a hidden implementation detail — it's a first-class,
 visible part of the product. The user watches the AI design a DAG of collection
@@ -42,7 +42,7 @@ just claiming it.
 ## Primary user story
 
 > As a business user, I type "find 15 companies sponsoring student hackathons in
-> fintech" into Cortex. I watch it build a collection plan, run it against real
+> fintech" into loomAI. I watch it build a collection plan, run it against real
 > sources, and within ~30–90 seconds I have a clean, deduplicated table of leads,
 > each with a source link and a confidence score, which I can filter and export
 > as CSV.

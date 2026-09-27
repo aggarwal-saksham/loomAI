@@ -1,1 +1,1 @@
-"""lunaAI backend application package."""
+"""loomAI backend application package."""

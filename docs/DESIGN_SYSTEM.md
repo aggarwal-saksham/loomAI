@@ -1,4 +1,4 @@
-# Design System — Cortex
+# Design System — loomAI
 
 The #1 instruction for the frontend: **this must not look like a generic
 "AI wrapper" app.** This is a judged criterion. Read the ban list before

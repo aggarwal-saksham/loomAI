@@ -1,6 +1,6 @@
-# lunaAI
+# loomAI
 
-lunaAI turns a natural-language data request into a visible, executable
+loomAI turns a natural-language data request into a visible, executable
 collection workflow. It runs permitted connectors, traces every result to its
 source, and exports a cleaned dataset.
 
@@ -36,7 +36,7 @@ Vite prints the local application URL, normally `http://localhost:5173`.
 ## Configuration
 
 Copy `.env.example` to `.env` in the repository root. `SEARCH_API_KEY` is
-optional: without it, lunaAI uses fixture-backed mock search data so the full
+optional: without it, loomAI uses fixture-backed mock search data so the full
 workflow remains runnable. Set either `OPENAI_API_KEY` or
 `ANTHROPIC_API_KEY` to enable LLM planning and extraction.
 

@@ -12,7 +12,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="lunaAI", lifespan=lifespan)
+app = FastAPI(title="loomAI", lifespan=lifespan)
 app.include_router(tasks_router)
 
 
