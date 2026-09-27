@@ -9,7 +9,7 @@
 <div align="center">
   <video src="./tutorial_loomAI.mp4" controls="controls" width="100%" style="max-height: 480px; border-radius: 8px; border: 1px solid #2B3038;">
     <source src="./tutorial_loomAI.mp4" type="video/mp4">
-    Your browser does not support the video tag.
+    https://github.com/user-attachments/assets/962db8b6-0d86-4025-9b1e-e4a88244d2cf
   </video>
 </div>
 
