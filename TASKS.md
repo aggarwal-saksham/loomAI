@@ -26,51 +26,52 @@ work scoped to one section at a time rather than jumping around.
 - [x] HN Algolia connector
 
 ## 4. Backend — execution engine
-- [ ] Topological sort + async executor
-- [ ] `fetch` node handler
-- [ ] `extract` node handler (LLM structured output, validated against
+- [x] Topological sort + async executor
+- [x] `fetch` node handler
+- [x] `extract` node handler (LLM structured output, validated against
       `schemas/extraction_output.json`, every row requires `source_url`)
-- [ ] `clean` node handler (normalize + fuzzy dedupe)
-- [ ] `validate` node handler (flag missing required fields → `needs_review`)
-- [ ] `output` node handler (writes `ResultRow`s)
-- [ ] Per-node retry-once-then-fail-isolated behavior
-- [ ] `POST /tasks/{id}/run`
-- [ ] `GET /tasks/{id}/stream` (SSE) — or polling fallback, per `DECISIONS.md`
+- [x] `clean` node handler (normalize + fuzzy dedupe)
+- [x] `validate` node handler (flag missing required fields → `needs_review`)
+- [x] `output` node handler (writes `ResultRow`s)
+- [x] Per-node retry-once-then-fail-isolated behavior
+- [x] `POST /tasks/{id}/run`
+- [x] `GET /tasks/{id}/stream` (SSE) — or polling fallback, per `DECISIONS.md`
 
 ## 5. Backend — remaining endpoints
-- [ ] `GET /tasks`
-- [ ] `GET /tasks/{id}`
-- [ ] `GET /tasks/{id}/results` (paginated, filterable by `needs_review`)
-- [ ] `GET /tasks/{id}/export?format=csv|json`
-- [ ] `POST /tasks/{id}/rerun`
+- [x] `GET /tasks`
+- [x] `GET /tasks/{id}`
+- [x] `GET /tasks/{id}/results` (paginated, filterable by `needs_review`)
+- [x] `GET /tasks/{id}/export?format=csv|json`
+- [x] `POST /tasks/{id}/rerun`
 
 ## 6. Frontend — foundation
-- [ ] Tailwind theme tokens set up per `DESIGN_SYSTEM.md` (colors, fonts)
-- [ ] Base layout shell (left rail / center canvas / bottom drawer)
-- [ ] Zustand stores (task state, node status, results)
-- [ ] API client + SSE hook
+- [x] Tailwind theme tokens set up per `DESIGN_SYSTEM.md` (colors, fonts)
+- [x] Base layout shell (left rail / center canvas / bottom drawer)
+- [x] Zustand stores (task state, node status, results)
+- [x] API client + SSE hook
 
 ## 7. Frontend — graph
-- [ ] Custom React Flow node components (one per node type)
-- [ ] Live status wiring via SSE/polling
-- [ ] Edge animation while data flows
-- [ ] Node completion micro-interaction (scale + glow)
+- [x] Custom React Flow node components (one per node type)
+- [x] Live status wiring via SSE/polling
+- [x] Edge animation while data flows
+- [x] Node completion micro-interaction (scale + glow)
 
 ## 8. Frontend — results
-- [ ] Results drawer (Framer Motion spring physics)
-- [ ] TanStack Table: mono data font, zebra rows, confidence bar, source_url
+- [x] Results drawer (Framer Motion spring physics)
+- [x] TanStack Table: mono data font, zebra rows, confidence bar, source_url
       hover tooltip
-- [ ] Search / filter / sort
-- [ ] Export buttons (CSV, JSON)
+- [x] Search / filter / sort
+- [x] Export buttons (CSV, JSON)
 
 ## 9. Frontend — history
-- [ ] Left rail task list (collapsed by default)
-- [ ] Reopen past task → shows original graph + results
-- [ ] Re-run action
+- [x] Left rail task list (collapsed by default)
+- [x] Reopen past task → shows original graph + results
+- [x] Re-run action
 
 ## 10. Demo readiness
-- [ ] Seed 2 cached demo tasks with real, pre-run results (works offline / no
+- [x] Seed 2 cached demo tasks with real, pre-run results (works offline / no
       API quota burn during judging)
-- [ ] Empty states written in-voice per `DESIGN_SYSTEM.md`
-- [ ] Error states styled consistently, not default browser/red-text errors
-- [ ] Full run-through: fresh prompt → graph → execution → results → export
+- [x] Empty states written in-voice per `DESIGN_SYSTEM.md`
+- [x] Error states styled consistently, not default browser/red-text errors
+- [x] Full run-through: fresh prompt → graph → execution → results → export
+

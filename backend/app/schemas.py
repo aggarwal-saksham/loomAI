@@ -39,3 +39,34 @@ class TaskGraphResponse(BaseModel):
     created_at: datetime
     nodes: list[WorkflowNodeResponse]
     edges: list[WorkflowEdgeResponse]
+
+
+class TaskSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    prompt: str
+    status: TaskStatus
+    result_count: int
+    created_at: datetime
+
+
+class ResultRowResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    task_id: str
+    fields: dict = Field(validation_alias="fields_json", serialization_alias="fields")
+    source_url: str
+    confidence: float
+    needs_review: bool
+    created_at: datetime
+
+
+class PaginatedResultsResponse(BaseModel):
+    task_id: str
+    results: list[ResultRowResponse]
+    total: int
+    page: int
+    page_size: int
+

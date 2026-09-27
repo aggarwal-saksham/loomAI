@@ -68,3 +68,13 @@ Why: The documented local startup command runs from `backend/`, while credential
 ## 2026-09-27 - Gemini as default LLM provider
 Decision: Add Gemini REST API support through the existing `httpx` client and prefer `GEMINI_API_KEY` with `gemini-2.5-flash-lite` by default.
 Why: The project owner has Gemini keys with available free-tier quota. Gemini JSON mode plus loomAI's existing `jsonschema` validation preserves the planner and extractor output contract without introducing an SDK dependency.
+
+## 2026-09-27 - Section 4 & 5 Execution Engine and API Completion
+Decision: Complete end-to-end execution test suite, mock connector routing, and implement Section 5 REST endpoints (list, get, paginated results with review filtering, dynamic CSV/JSON export, and task rerun with node status reset).
+Why: Fulfills the ARCHITECTURE.md API specification, validates DAG topological execution, isolates node failures gracefully, and prepares the backend contract for frontend connection.
+
+## 2026-09-27 - Frontend Terminal Implementation and Demo Readiness
+Decision: Built the React/TypeScript/Vite frontend following the control-room terminal aesthetic from DESIGN_SYSTEM.md: 3-zone layout (collapsible left rail for mission history, center canvas with custom @xyflow nodes and flowing dashes, bottom spring drawer for TanStack table signals), and automatically seed 2 realistic demo tasks at backend startup for offline evaluation.
+Why: Strictly enforces the ban list against generic AI apps, fulfills the full PRD user journey, and allows the platform to be evaluated offline without incurring API quota burn.
+
+

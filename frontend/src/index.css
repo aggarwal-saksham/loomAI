@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: #0B0D10;
+  color: #E2E8F0;
+  font-family: 'JetBrains Mono', monospace;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0D10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2B3038;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4A4F57;
+}
+
+/* React Flow custom styling */
+.react-flow__background {
+  background-color: #0B0D10 !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* Flowing dashes animation on running edges */
+@keyframes flowDash {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.edge-running path {
+  stroke: #FF7A1A !important;
+  stroke-width: 2px !important;
+  stroke-dasharray: 6, 6;
+  animation: flowDash 1s linear infinite;
+}
+
+.edge-done path {
+  stroke: #3FA772 !important;
+  stroke-width: 1.5px !important;
+}
+
+.edge-pending path {
+  stroke: #2B3038 !important;
+  stroke-width: 1.5px !important;
+}
+
+.edge-failed path {
+  stroke: #C1554A !important;
+  stroke-width: 1.5px !important;
+}
+
+/* Node glow pulse */
+@keyframes nodePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 26, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 122, 26, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 26, 0);
+  }
+}
+
+.node-pulse-running {
+  animation: nodePulse 1.8s infinite;
+}
+
+@keyframes nodeDoneGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(63, 167, 114, 0.6);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(63, 167, 114, 0);
+    transform: scale(1);
+  }
+}
+
+.node-just-done {
+  animation: nodeDoneGlow 0.8s ease-out;
+}

@@ -4,8 +4,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from dotenv import load_dotenv
 
-from .db import init_db
+from .db import SessionLocal, init_db
 from .routes.tasks import router as tasks_router
+from .seed import seed_demo_data
 
 
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
@@ -14,6 +15,11 @@ load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    db = SessionLocal()
+    try:
+        seed_demo_data(db)
+    finally:
+        db.close()
     yield
 
 
