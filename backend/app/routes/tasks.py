@@ -151,12 +151,25 @@ async def stream_task(task_id: str):
         queue = event_bus.subscribe(task_id)
         try:
             while True:
-                event = await queue.get()
-                yield f"data: {json.dumps(event)}\n\n"
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=20.0)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+        except (asyncio.CancelledError, GeneratorExit):
+            pass
         finally:
             event_bus.unsubscribe(task_id, queue)
 
-    return StreamingResponse(events(), media_type="text/event-stream")
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @router.get("/{task_id}/results", response_model=PaginatedResultsResponse)

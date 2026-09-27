@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from collections.abc import Awaitable, Callable
@@ -68,22 +69,43 @@ async def _default_llm_call(prompt: str) -> str:
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
     if gemini_key:
-        model = os.getenv("GEMINI_MODEL") or "gemini-3.8-flash"
+        models_to_try = [
+            os.getenv("GEMINI_MODEL") or "gemini-3.8-flash",
+            "gemini-flash-latest",
+            "gemini-flash-lite-latest",
+        ]
+        models_to_try = list(dict.fromkeys(models_to_try))
         payload = {
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {"responseMimeType": "application/json"},
         }
-        try:
-            async with httpx.AsyncClient(timeout=45) as client:
-                response = await client.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-                    params={"key": gemini_key},
-                    json=payload,
-                )
-                response.raise_for_status()
-        except httpx.HTTPError as error:
-            raise PlannerProviderError(f"Gemini planner request failed: {error}") from error
-        return response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        headers = {"x-goog-api-key": gemini_key}
+        last_error = None
+
+        for model in models_to_try:
+            for attempt in range(3):
+                try:
+                    async with httpx.AsyncClient(timeout=60) as client:
+                        response = await client.post(
+                            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                            headers=headers,
+                            json=payload,
+                        )
+                        if response.status_code in (429, 500, 502, 503, 504):
+                            await asyncio.sleep(1.0 * (attempt + 1))
+                            continue
+                        response.raise_for_status()
+                        candidates = response.json().get("candidates", [])
+                        if candidates and "content" in candidates[0] and "parts" in candidates[0]["content"]:
+                            return candidates[0]["content"]["parts"][0]["text"]
+                except httpx.HTTPError as error:
+                    last_error = error
+                    await asyncio.sleep(1.0 * (attempt + 1))
+
+        clean_err = str(last_error)
+        if gemini_key:
+            clean_err = clean_err.replace(gemini_key, "[REDACTED]")
+        raise PlannerProviderError(f"Gemini API request failed after retries: {clean_err}")
 
     if openai_key:
         payload = {

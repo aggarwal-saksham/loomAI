@@ -26,7 +26,25 @@ def _parents(ids: set[str], data: dict[str, object]) -> list[object]:
 
 async def _extract(documents: list[SourceDocument], fields: list[str]) -> list[dict[str, Any]]:
     examples = [json.loads((ROOT_DIR / "examples" / name).read_text(encoding="utf-8"))["expected_result_row_example"] for name in ("sample_prompt_1.json", "sample_prompt_2.json")]
-    prompt = f"Extract rows with fields {fields} from these permitted documents. Return JSON only in this form {{\"rows\": [...]}}. Examples: {json.dumps(examples)}. Documents: {json.dumps([document.__dict__ for document in documents])}"
+    
+    # Trim document content to prevent excessive payloads triggering 503s
+    trimmed_docs = [
+        {
+            "url": doc.url,
+            "title": doc.title,
+            "content": (doc.content[:1500] if doc.content else ""),
+        }
+        for doc in documents[:10]
+    ]
+
+    prompt = (
+        f"Extract rows with fields {fields} from these permitted documents. "
+        f"Return JSON only in this form {{\"rows\": [...]}}. "
+        f"Each item in rows must have \"fields\" (dict), \"source_url\" (string), and \"confidence\" (float 0.0 to 1.0). "
+        f"Every row requires a non-empty source_url. "
+        f"Examples: {json.dumps(examples)}. "
+        f"Documents: {json.dumps(trimmed_docs)}"
+    )
     last_error: Exception | None = None
     for _ in range(2):
         try:

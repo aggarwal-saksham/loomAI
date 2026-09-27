@@ -22,8 +22,13 @@ class TaskEventBus:
         if queue in self.subscribers[task_id]:
             self.subscribers[task_id].remove(queue)
 
-    async def publish(self, task_id: str, node_id: str, status: NodeStatus, error: str | None = None) -> None:
-        event = {"node_id": node_id, "status": status.value, "timestamp": datetime.utcnow().isoformat(), "error": error}
+    async def publish(self, task_id: str, node_id: str, status: object, error: str | None = None) -> None:
+        status_val = status.value if hasattr(status, "value") else str(status)
+        clean_error = error
+        if clean_error and "key=" in clean_error:
+            import re
+            clean_error = re.sub(r"key=[A-Za-z0-9_\-\.]+", "key=[REDACTED]", clean_error)
+        event = {"node_id": node_id, "status": status_val, "timestamp": datetime.utcnow().isoformat(), "error": clean_error}
         for queue in list(self.subscribers[task_id]):
             await queue.put(event)
 
