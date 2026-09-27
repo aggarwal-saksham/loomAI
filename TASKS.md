@@ -19,11 +19,11 @@ work scoped to one section at a time rather than jumping around.
 - [x] `POST /tasks` persists the validated DAG (status=draft)
 
 ## 3. Backend — connectors
-- [ ] Connector interface (`connectors/base.py`)
-- [ ] Web search connector (Tavily/SerpAPI)
-- [ ] Mock search connector (fallback, no API key required)
-- [ ] RemoteOK connector
-- [ ] HN Algolia connector
+- [x] Connector interface (`connectors/base.py`)
+- [x] Web search connector (Tavily/SerpAPI)
+- [x] Mock search connector (fallback, no API key required)
+- [x] RemoteOK connector
+- [x] HN Algolia connector
 
 ## 4. Backend — execution engine
 - [ ] Topological sort + async executor

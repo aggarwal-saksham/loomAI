@@ -52,3 +52,7 @@ Why: This keeps the single-process, file-backed development database beside the 
 ## 2026-09-27 - Default planner models
 Decision: Use `gpt-4o-mini` for OpenAI and `claude-3-5-haiku-latest` for Anthropic planner calls, selected by the available API key.
 Why: Both are economical structured-output-capable defaults for a hackathon workflow. The HTTP client boundary keeps model selection easy to adjust without changing planner validation or persistence behavior.
+
+## 2026-09-27 - Search provider selection
+Decision: Implement the permitted web-search connector using Tavily.
+Why: The architecture permits Tavily or SerpAPI. Tavily's search response provides result URLs and content snippets directly, which supports traceable extraction with the smallest connector surface.
