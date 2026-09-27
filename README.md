@@ -1,144 +1,171 @@
-# loomAI — AI Data Intelligence Platform
+# loomAI
 
-> **Dynamic Prompt-to-DAG Collection, Real-Time Signal Terminal & Traceable Extraction**
-
-loomAI is a prompt-based AI data intelligence platform that transforms natural language requests into schema-validated, executable workflow graphs (DAGs). It queries permitted sources, isolates failures, validates and fuzzy-deduplicates records, guarantees source traceability for every extracted row, and streams live progress into an asymmetric control-room terminal interface.
+> **An AI-orchestrated data intelligence platform that compiles natural-language requests into observable, self-healing collection DAGs with strict source-traceability.**
 
 ---
 
-## ✦ Key Capabilities
+## 🎯 The Core Problem & What loomAI Solves
 
-- **Visible, Dynamic Workflow Planning**: Instead of hiding data collection in a black box, loomAI synthesizes a visible Directed Acyclic Graph (DAG) consisting of `source` → `fetch` → `extract` → `clean` → `validate` → `output` nodes.
-- **Real-Time Execution Terminal**: Live streaming via Server-Sent Events (SSE) animates data pulses through the graph with custom node badges and flowing edges.
-- **Failure Isolation & Auto-Retry**: Faulty fetch queries or transient LLM timeouts auto-retry once with exponential backoff and fail isolated—unaffected branches continue executing to completion without crashing the task.
-- **Strict Source Traceability**: Every single persisted `ResultRow` is strictly required to link back to a valid, non-null `source_url`.
-- **Fuzzy Deduplication & Quality Control**: Uses `rapidfuzz` token-ratio matching to deduplicate records and flags missing fields or low-confidence rows (`confidence < 0.7`) with `needs_review=true` rather than silently dropping data.
-- **Spring Physics Results Drawer**: Results slide up in a spring-animated drawer using TanStack Table with horizontal confidence meters, search filtering, and one-click CSV/JSON export.
-- **Mission History & Instant Re-run**: Collapsible left rail allows inspecting past workflow runs, viewing original graphs, and re-executing saved DAGs.
-- **100% Offline / Zero-Quota Demo Ready**: Automatically seeds realistic demo missions on initial launch and falls back to a fixture-backed mock search connector if no search API key is provided.
+### The Problem with Traditional Web Scrapers & AI Wrappers
+1. **Fragile, Hardcoded Scrapers**: Businesses need data (sponsorships, leads, job listings, market intel) from dynamic web sources. Writing a bespoke scraper for every query takes days, breaks on minor HTML changes, and doesn't scale.
+2. **The "Black Box" Problem in AI Tools**: Most "AI research agents" run invisible Python scripts in the background, hallucinate facts, fail silently without letting you see where they got stuck, or output unverifiable data.
+3. **Silent Data Loss & Hallucinations**: Standard scrapers either crash when a field is missing or silently drop low-confidence rows. Furthermore, AI extractors often invent URLs or summarize without citations.
 
----
-
-## ✦ System Architecture
-
-```mermaid
-flowchart TD
-    User([User Natural Language Directive]) --> UI[loomAI Signal Terminal\nReact 18 + TS + Vite]
-    UI -->|POST /tasks| Planner[LLM Planner\nGemini 3.8 Flash]
-    Planner -->|Validates JSON Schema| DB[(SQLite Database\nTasks, Nodes, Edges)]
-    UI -->|POST /tasks/:id/run| Executor[Async DAG Executor\nTopological Order]
-    
-    subgraph Execution Pipeline
-        N1[Source Nodes\nWeb Search / RemoteOK / HN] --> N2[Fetch Node]
-        N2 --> N3[Extract Node\nLLM Structured Parser]
-        N3 --> N4[Clean Node\nNormalize + Fuzzy Dedupe]
-        N4 --> N5[Validate Node\nField Check + Confidence Gate]
-        N5 --> N6[Output Node\nPersist ResultRows]
-    end
-
-    Executor --> Execution Pipeline
-    Executor -->|SSE Stream: GET /tasks/:id/stream| UI
-    N6 --> DB
-    UI -->|GET /tasks/:id/results| Drawer[Results Drawer\nTanStack Grid + CSV/JSON Export]
-```
+### How loomAI Solves This
+- **Visible Dynamic DAG Compiler**: A natural-language prompt doesn't just run a script; it dynamically compiles into an observable **Directed Acyclic Graph (DAG)** (`source` → `fetch` → `extract` → `clean` → `validate` → `output`).
+- **Live Signal Terminal**: Each node's execution is streamed in real-time over Server-Sent Events (SSE). Users watch the pipeline execute step-by-step with pulsing status chips and animated flowing edges.
+- **Strict Source Traceability**: Every row persisted in the database is verified by schema code to have a working, non-empty `source_url`. No hallucinated sources.
+- **Fail-Isolated Branching**: If a node fails (e.g. bad fetch or API rate limit), it retries once, isolates the failure to its branch, and lets independent branches finish. The overall task only fails if the final `output` dataset node cannot run.
+- **Data Quality Quarantine**: Incomplete or low-confidence rows (`confidence < 0.70`) aren't deleted—they are quarantined into `needs_review = true` so the user maintains full auditability.
 
 ---
 
-## ✦ Tech Stack
+## 🛠️ Hard Engineering Problems We Diagnosed & Fixed
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend UI** | React 18, TypeScript, Vite, Tailwind CSS, `@xyflow/react` (Graph Canvas), `framer-motion` (Spring Drawer), `@tanstack/react-table`, `zustand` (State) |
-| **Design System** | Signal intelligence control-room aesthetic (`#0B0D10` near-black base, `#15181C` graphite surfaces, `#FF7A1A` hot amber active state, JetBrains Mono & Space Grotesk typefaces) |
-| **Backend API** | FastAPI, Python 3.11+, SQLAlchemy 2.0, SQLite, `asyncio` task execution, Server-Sent Events (SSE) streaming |
-| **Intelligence** | Google Gemini (`gemini-3.8-flash` with `x-goog-api-key` header & exponential backoff), OpenAI, Anthropic |
-| **Connectors** | Tavily Web Search API, RemoteOK Job API, Hacker News Algolia API, and built-in `MockSearchConnector` |
-| **Validation** | `jsonschema` validation against `schemas/workflow_node.json` and `schemas/extraction_output.json` |
+During the design and implementation of loomAI, several non-trivial distributed systems, LLM reliability, and frontend challenges were tackled:
+
+### 1. The 503 Overload & Payload Bloat in LLM Extraction
+- **The Issue**: Fetch nodes querying search APIs returned massive HTML snippets and raw texts. Passing raw payloads directly to the LLM extractor overloaded Google Gemini's API gateway, resulting in HTTP `503 Service Unavailable`.
+- **The Fix**: Implemented an intelligent document sanitizer in `nodes.py` that caps each document snippet to 1,500 characters and prioritizes top relevance matches. Added a 3-stage exponential backoff retry loop in `planner.py` with automatic fallback from `gemini-3.8-flash` to `gemini-flash-latest` / `gemini-flash-lite-latest` if capacity limits are reached.
+
+### 2. API Key Leakage in HTTP Error Traces
+- **The Issue**: Gemini's default query param pattern (`?key=...`) caused `httpx` to print the complete API key in terminal exception tracebacks and UI error cards when network calls failed.
+- **The Fix**: Migrated to the official `x-goog-api-key` HTTP header so credentials never appear in URLs. Added a regex-based redaction filter in `TaskEventBus.publish` to sanitize any sensitive credentials before streaming error events to the frontend.
+
+### 3. Asynchronous SSE Disconnects & ASGI Server Crashes
+- **The Issue**: When users refreshed the browser or switched missions in the UI, open Server-Sent Event (SSE) generators threw unhandled `asyncio.CancelledError` and `ClientDisconnected` exceptions, flooding the Uvicorn console.
+- **The Fix**: Rewrote `stream_task` in `tasks.py` with graceful cancellation handling (`(asyncio.CancelledError, GeneratorExit)`) and added 20-second `: keepalive` pings to keep connections healthy through reverse proxies.
+
+### 4. Port Collisions & Direct Execution Support
+- **The Issue**: Running `python app/main.py` directly caused `ImportError: attempted relative import with no known parent package`. Additionally, lingering background worker processes occasionally caused Windows socket binding conflicts (`[Errno 10048]`).
+- **The Fix**: Added `if __name__ == '__main__': uvicorn.run(...)` with automatic module resolution in `main.py` and enabled full `CORSMiddleware` so the Vite dev server (`:5173`) can communicate seamlessly with FastAPI (`:8000`).
+
+### 5. False Duplicate Collisions in Fuzzy Matching
+- **The Issue**: In the `clean` node, rows with missing or generic names collapsed together because `fuzz.ratio("", "") == 100`, accidentally pruning unique data.
+- **The Fix**: Updated the deduplication engine in `nodes.py` to require non-empty identity strings, support custom `dedupe_on` field tuples (e.g. `['company_name', 'website']`), and apply strict token matching thresholds before pruning duplicates.
 
 ---
 
-## ✦ Directory Structure
+## ⚡ Tech Stack
+
+### Frontend
+- **Framework**: React 18, TypeScript, Vite
+- **Styling**: Tailwind CSS (custom control-room theme: `#0B0D10` near-black base, `#15181C` graphite cards, `#FF7A1A` hot amber active state)
+- **Workflow Canvas**: `@xyflow/react` with custom-rendered nodes and animated SVG flow paths
+- **Data Grid**: `@tanstack/react-table` with live column sorting, filtering, and confidence meters
+- **Micro-Interactions**: `framer-motion` for spring-physics drawers and completion glow pulses
+- **State Management**: `zustand` for single-source-of-truth across DAG states, task lists, and signal data
+
+### Backend & Data
+- **API Framework**: FastAPI, Python 3.11+, Uvicorn
+- **Database & ORM**: SQLite + SQLAlchemy 2.0 (`Task`, `WorkflowNode`, `WorkflowEdge`, `ResultRow`)
+- **Async Execution**: Native `asyncio` background DAG traversal with topological dependency resolution
+- **Real-Time Streaming**: Server-Sent Events (SSE) via custom asynchronous `TaskEventBus`
+- **Quality & Dedupe**: `rapidfuzz` (string & token similarity) and `jsonschema` (strict schema validation)
+
+### Permitted Connectors & Intelligence
+- **LLM Engine**: Google Gemini API (`gemini-3.8-flash` by default; OpenAI and Anthropic supported as drop-ins)
+- **Search Connectors**: Tavily Web Search API (live web search)
+- **Public APIs**: RemoteOK API (job listings) & Hacker News Algolia API (discussions & launches)
+- **Zero-Dependency Mock**: Built-in `MockSearchConnector` backed by fixture data for offline evaluation
+
+---
+
+## 📁 Folder Structure
 
 ```
 loomAI/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI entrypoint, CORS, startup lifespan & seed
-│   │   ├── db.py                # SQLite engine & SQLAlchemy SessionLocal
-│   │   ├── models.py            # Task, WorkflowNode, WorkflowEdge, ResultRow
-│   │   ├── schemas.py           # Pydantic request/response models
-│   │   ├── seed.py              # Realistic demo missions for offline evaluation
-│   │   ├── connectors/          # Web search, RemoteOK, Hacker News, Mock
-│   │   ├── workflow/            # Planner (LLM DAG), Executor (Async), Nodes (Handlers)
-│   │   └── routes/              # /tasks REST & SSE endpoints
-│   ├── tests/                   # 13 automated unit & integration test suites
-│   └── requirements.txt
+│   │   ├── main.py              # FastAPI app initialization, CORS middleware, lifespan & direct execution
+│   │   ├── db.py                # SQLite engine setup and SQLAlchemy SessionLocal provider
+│   │   ├── models.py            # SQLAlchemy database models (Task, WorkflowNode, WorkflowEdge, ResultRow)
+│   │   ├── schemas.py           # Pydantic v2 validation models for requests, graph responses, and exports
+│   │   ├── seed.py              # Automatic offline demo seeding (Fintech Sponsors & Remote DevOps jobs)
+│   │   ├── connectors/          # Data ingestion connectors
+│   │   │   ├── base.py          # Abstract Connector interface & SourceDocument dataclass
+│   │   │   ├── web_search.py    # Tavily Web Search API connector
+│   │   │   ├── remoteok.py      # RemoteOK JSON API connector
+│   │   │   ├── hn_algolia.py    # Hacker News Algolia Search API connector
+│   │   │   └── mock.py          # Offline fixture-backed mock search connector
+│   │   ├── workflow/            # Core execution engine
+│   │   │   ├── planner.py       # LLM workflow compiler (prompt → validated DAG with retry backoff)
+│   │   │   ├── executor.py      # Async topological DAG executor & SSE TaskEventBus
+│   │   │   └── nodes.py         # Node handlers (source, fetch, extract, clean, validate, output)
+│   │   └── routes/
+│   │       └── tasks.py         # REST endpoints: /tasks, /run, /stream, /results, /export, /rerun
+│   ├── tests/                   # Automated unit & integration tests
+│   │   ├── test_connectors.py   # Tests for source connectors and fixture responses
+│   │   ├── test_planner.py      # Tests for LLM prompt compiler and schema validation
+│   │   ├── test_executor.py     # Tests for DAG topological sort, failure isolation, and SSE bus
+│   │   └── test_routes.py       # Tests for REST endpoints, pagination, CSV/JSON export, and rerun
+│   ├── requirements.txt         # Backend Python dependencies
+│   └── loomai.db                # Local SQLite database file
+│
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── CommandBar.tsx   # Top directive bar & preset chips
-│   │   │   ├── graph/           # Custom React Flow nodes & animated edge canvas
-│   │   │   ├── history/         # Collapsible mission history left rail
-│   │   │   └── results/         # Spring results drawer & TanStack table
-│   │   ├── store/               # Zustand application store
-│   │   ├── lib/                 # API client, SSE hook, TypeScript types
-│   │   ├── App.tsx              # Asymmetric 3-zone layout orchestrator
-│   │   ├── index.css            # Custom scrollbars, glow pulses, edge keyframes
-│   │   └── main.tsx
-│   ├── index.html               # Google Fonts (JetBrains Mono, Space Grotesk)
-│   ├── tailwind.config.js       # Design system tokens
-│   └── package.json
-├── docs/                        # PRD, Architecture, Design System, Decisions Log
-├── schemas/                     # Strict JSON schemas for workflow and extractions
-├── examples/                    # Few-shot sample prompts and expected DAG fixtures
-├── TASKS.md                     # Completed build checklist
-└── README.md
+│   │   │   ├── CommandBar.tsx   # Top terminal bar with mission directive input & preset chips
+│   │   │   ├── graph/
+│   │   │   │   ├── CustomNode.tsx       # Custom React Flow node with type tags, status pills & glow pulses
+│   │   │   │   └── WorkflowCanvas.tsx   # Interactive graph canvas with flowing dashed edge animations
+│   │   │   ├── history/
+│   │   │   │   └── HistoryRail.tsx      # Collapsible left rail showing past missions with instant re-run
+│   │   │   └── results/
+│   │   │       └── ResultsDrawer.tsx    # Spring-physics drawer with TanStack Table & CSV/JSON export
+│   │   ├── store/
+│   │   │   └── useAppStore.ts   # Zustand state store managing task graph, drawer, and live results
+│   │   ├── lib/
+│   │   │   ├── api.ts           # Frontend REST API client
+│   │   │   ├── types.ts         # TypeScript data contracts (TaskGraph, ResultRow, NodeStatus, etc.)
+│   │   │   └── useSSE.ts        # React hook for real-time Server-Sent Events subscription
+│   │   ├── App.tsx              # Asymmetric three-zone terminal layout
+│   │   ├── index.css            # Tailwind directives, custom scrollbars, and keyframe animations
+│   │   └── main.tsx             # React DOM entrypoint
+│   ├── index.html               # Web entrypoint with Google Fonts (JetBrains Mono & Space Grotesk)
+│   ├── tailwind.config.js       # Design system theme tokens
+│   ├── vite.config.ts           # Vite bundler configuration & backend proxy
+│   ├── tsconfig.json            # TypeScript configuration
+│   └── package.json             # Frontend dependencies
+│
+├── docs/                        # Specifications and decisions history
+│   ├── PRD.md                   # Product requirements document
+│   ├── ARCHITECTURE.md          # Technical specifications and data contracts
+│   ├── DESIGN_SYSTEM.md         # Visual rules, color tokens, and UI ban list
+│   └── DECISIONS.md             # Append-only architectural decisions log
+│
+├── schemas/                     # JSON Schemas validated at runtime
+│   ├── workflow_node.json       # Schema for validating LLM-generated DAG plans
+│   └── extraction_output.json   # Schema for validating LLM-extracted structured fields
+│
+├── examples/                    # Few-shot prompts & expected planner/extractor JSON fixtures
+│   ├── sample_prompt_1.json     # Fintech hackathon sponsors fixture
+│   └── sample_prompt_2.json     # Remote DevOps job listings fixture
+│
+├── TASKS.md                     # Completed build checklist (All 10 sections checked)
+├── HANDOFF.md                   # State handoff and run guide
+└── README.md                    # Project documentation
 ```
 
 ---
 
-## ✦ Getting Started
+## 🚀 Quickstart
 
-### Prerequisites
-
-- **Python**: 3.11 or newer
-- **Node.js**: v20 or newer (v24 supported)
-- **Package Manager**: `npm` (Windows PowerShell: use `npm.cmd`)
-
----
-
-### 1. Environment Configuration
-
-Create a `.env` file in the root directory:
-
+### 1. Configure Environment
+Create `.env` in the project root:
 ```powershell
 cp .env.example .env
 ```
-
-Open `.env` and configure your API credentials:
-
+Add your Gemini API key (free tier supported):
 ```bash
-# Recommended LLM Provider (Google AI Studio)
-GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_API_KEY=your_key_here
 GEMINI_MODEL=gemini-3.8-flash
 
-# Optional: Tavily Web Search API key (falls back to mock connector if omitted)
-SEARCH_API_KEY=your_search_api_key_here
-
-# Alternative LLM Providers (Optional)
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
+# Optional: Tavily web search key (falls back to mock search if empty)
+SEARCH_API_KEY=
 ```
 
-> [!TIP]
-> **No API keys?** You can still run and explore the entire platform! loomAI automatically boots with pre-seeded demo missions and an offline mock search connector.
-
----
-
-### 2. Backend Setup
-
-Open a terminal in the `backend/` directory:
-
+### 2. Start Backend
 ```powershell
 cd backend
 python -m venv .venv
@@ -146,94 +173,28 @@ python -m venv .venv
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
+*API docs available at `http://127.0.0.1:8000/docs`.*
 
-The FastAPI backend will start at `http://127.0.0.1:8000`.  
-Interactive Swagger documentation is available at `http://127.0.0.1:8000/docs`.
-
----
-
-### 3. Frontend Setup
-
-Open a second terminal in the `frontend/` directory:
-
+### 3. Start Frontend
+In a second terminal:
 ```powershell
 cd frontend
 npm.cmd install
 npm.cmd run dev
 ```
-
-Open your browser at `http://localhost:5173` to access the loomAI Signal Terminal.
-
----
-
-## ✦ REST API Reference
-
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `POST` | `/tasks` | Synthesizes an LLM workflow DAG from `{ prompt }`, validates against JSON Schema, and saves task in `draft` status. |
-| `POST` | `/tasks/{id}/run` | Starts async execution of the DAG in topological order. Returns `{ status: "running" }`. |
-| `GET` | `/tasks/{id}/stream` | Server-Sent Events (SSE) stream broadcasting live status updates per node (`pending` → `running` → `done`/`failed`). |
-| `GET` | `/tasks` | Retrieves list of all past missions with prompt, status, result count, and timestamps. |
-| `GET` | `/tasks/{id}` | Retrieves full graph topology (nodes, positions, configs, and edges) with current statuses. |
-| `GET` | `/tasks/{id}/results` | Paginated results grid. Supports `?page=1&page_size=50&needs_review=true\|false`. |
-| `GET` | `/tasks/{id}/export` | Generates a downloadable file of all results in `csv` or `json` (`?format=csv` or `?format=json`). |
-| `POST` | `/tasks/{id}/rerun` | Resets node statuses, clears old result rows, and re-executes the saved DAG. |
-| `GET` | `/health` | Health-check endpoint returning `{"status": "ok"}`. |
+*Open `http://localhost:5173` to launch the terminal.*
 
 ---
 
-## ✦ Quality Assurance & Automated Tests
+## 🧪 Test Suite
 
-loomAI includes a comprehensive test suite covering the data layer, planner few-shot validation, connector routing, DAG executor topological ordering, failure isolation, SSE event bus, and all REST endpoints.
-
-Run the test suite from `backend/`:
-
+Run the 13 automated backend tests (covers connectors, planner, DAG executor, retry/isolation, SSE events, and all REST endpoints):
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
-
-All 13 automated tests run and pass in under 5 seconds:
-```
-test_mock_connector_returns_traceable_fixture_documents ... ok
-test_execute_task_end_to_end ... ok
-test_node_retry_and_isolation ... ok
-test_run_endpoint ... ok
-test_sse_event_bus ... ok
-test_fixture_plans_validate ... ok
-test_invalid_plan_retries_once ... ok
-test_post_tasks_persists_a_valid_plan ... ok
-test_export_task_results ... ok
-test_get_task_by_id ... ok
-test_get_task_results_pagination_and_filter ... ok
-test_get_tasks_history_list ... ok
-test_rerun_task ... ok
-
-Ran 13 tests in 3.5s — OK
-```
-
-To validate the frontend build:
-
+Build frontend production bundle:
 ```powershell
 cd frontend
 npm.cmd run build
 ```
-
----
-
-## ✦ Design System Compliance
-
-Per `docs/DESIGN_SYSTEM.md`, loomAI intentionally rejects generic "AI wrapper" aesthetics (no purple/blue gradients, no centered chat-bubbles, no stock hero cards). Instead, it adopts a technical, high-density **Signal Intelligence Terminal** aesthetic:
-
-- **Asymmetric Three-Zone Layout**:
-  1. *Left Rail*: Mission history, collapsed by default.
-  2. *Center Canvas*: Dominant viewport rendering interactive workflow DAG nodes and flowing dashed edge animations.
-  3. *Bottom Drawer*: Spring-physics results table displaying verified records, horizontal confidence meters, and instant export tools.
-- **Color Discipline**: True near-black background (`#0B0D10`), graphite panels (`#15181C`), muted borders (`#2B3038`), hot amber active indicator (`#FF7A1A`), and cool green completion glow (`#3FA772`).
-- **Technical Typography**: JetBrains Mono for data, timestamps, and node parameters; Space Grotesk for crisp terminal headers.
-
----
-
-## ✦ License
-
-MIT
