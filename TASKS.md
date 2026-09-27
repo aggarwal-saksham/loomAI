@@ -13,10 +13,10 @@ work scoped to one section at a time rather than jumping around.
 - [x] DB init / migration on startup (SQLite file)
 
 ## 2. Backend — LLM planner
-- [ ] `planner.py`: prompt → DAG JSON via LLM structured output
-- [ ] Validate output against `schemas/workflow_node.json`; retry once on failure
-- [ ] Tested against both `examples/sample_prompt_1.json` and `sample_prompt_2.json`
-- [ ] `POST /tasks` persists the validated DAG (status=draft)
+- [x] `planner.py`: prompt → DAG JSON via LLM structured output
+- [x] Validate output against `schemas/workflow_node.json`; retry once on failure
+- [x] Tested against both `examples/sample_prompt_1.json` and `sample_prompt_2.json`
+- [x] `POST /tasks` persists the validated DAG (status=draft)
 
 ## 3. Backend — connectors
 - [ ] Connector interface (`connectors/base.py`)

@@ -48,3 +48,7 @@ Why: The build request names the product lunaAI, while the supplied PRD, archite
 ## 2026-09-27 - Local database location
 Decision: Store the SQLite database at `backend/lunaai.db` and initialize its schema with SQLAlchemy on application startup.
 Why: This keeps the single-process, file-backed development database beside the backend, avoids machine-specific configuration, and follows the SQLite decision in the architecture.
+
+## 2026-09-27 - Default planner models
+Decision: Use `gpt-4o-mini` for OpenAI and `claude-3-5-haiku-latest` for Anthropic planner calls, selected by the available API key.
+Why: Both are economical structured-output-capable defaults for a hackathon workflow. The HTTP client boundary keeps model selection easy to adjust without changing planner validation or persistence behavior.
