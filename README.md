@@ -38,7 +38,8 @@ Vite prints the local application URL, normally `http://localhost:5173`.
 Copy `.env.example` to `.env` in the repository root. `SEARCH_API_KEY` is
 optional: without it, loomAI uses fixture-backed mock search data so the full
 workflow remains runnable. Set either `OPENAI_API_KEY` or
-`ANTHROPIC_API_KEY` to enable LLM planning and extraction.
+`GEMINI_API_KEY` to enable LLM planning and extraction. OpenAI and Anthropic
+keys remain supported as alternatives.
 
 ## Development
 

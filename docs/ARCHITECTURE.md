@@ -12,9 +12,10 @@ adding an entry to `DECISIONS.md`.
   `asyncio` background tasks (no Redis/Celery — out of scope), Server-Sent
   Events for live node-status streaming (fall back to 1s polling if SSE proves
   unreliable in the dev environment — log this in `DECISIONS.md` if so).
-- **LLM:** Anthropic or OpenAI API, structured/JSON output mode (tool-calling
-  or JSON mode) for both the planner and extractor calls. Read the API key
-  from an environment variable; never hardcode it.
+- **LLM:** Gemini API by default, with Anthropic or OpenAI as supported
+  alternatives. Use structured/JSON output mode for both the planner and
+  extractor calls. Read the API key from an environment variable; never
+  hardcode it.
 - **Connectors (permitted sources only):**
   - Web search API (Tavily or SerpAPI — env var `SEARCH_API_KEY`). If absent,
     fall back to a `MockSearchConnector` that returns fixture data from
@@ -146,6 +147,7 @@ ResultRow
 ## Environment variables
 
 ```
+GEMINI_API_KEY=               # preferred provider
 ANTHROPIC_API_KEY=            # or OPENAI_API_KEY
 SEARCH_API_KEY=                # Tavily or SerpAPI; optional (falls back to mock)
 ```

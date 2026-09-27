@@ -63,8 +63,27 @@ def _planner_prompt(prompt: str, retry_error: str | None = None) -> str:
 
 
 async def _default_llm_call(prompt: str) -> str:
+    gemini_key = os.getenv("GEMINI_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+
+    if gemini_key:
+        model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json"},
+        }
+        try:
+            async with httpx.AsyncClient(timeout=45) as client:
+                response = await client.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                    params={"key": gemini_key},
+                    json=payload,
+                )
+                response.raise_for_status()
+        except httpx.HTTPError as error:
+            raise PlannerProviderError(f"Gemini planner request failed: {error}") from error
+        return response.json()["candidates"][0]["content"]["parts"][0]["text"]
 
     if openai_key:
         payload = {
@@ -105,7 +124,7 @@ async def _default_llm_call(prompt: str) -> str:
         return response.json()["content"][0]["text"]
 
     raise PlannerConfigurationError(
-        "Set OPENAI_API_KEY or ANTHROPIC_API_KEY to create a workflow plan."
+        "Set GEMINI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY to create a workflow plan."
     )
 
 

@@ -64,3 +64,7 @@ Why: The project owner selected loomAI as the final product name. This supersede
 ## 2026-09-27 - Root environment loading
 Decision: Load the gitignored root `.env` during FastAPI startup with `python-dotenv`.
 Why: The documented local startup command runs from `backend/`, while credentials are kept in the repository root. Explicit loading keeps that command reliable without exposing secrets in source control.
+
+## 2026-09-27 - Gemini as default LLM provider
+Decision: Add Gemini REST API support through the existing `httpx` client and prefer `GEMINI_API_KEY` with `gemini-2.5-flash-lite` by default.
+Why: The project owner has Gemini keys with available free-tier quota. Gemini JSON mode plus loomAI's existing `jsonschema` validation preserves the planner and extractor output contract without introducing an SDK dependency.
