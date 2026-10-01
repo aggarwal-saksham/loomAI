@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { NodeEvent } from './types';
+import { BASE_URL } from './api';
 
 export function useSSE(taskId: string | null, onEvent: (event: NodeEvent) => void) {
   const onEventRef = useRef(onEvent);
@@ -12,7 +13,7 @@ export function useSSE(taskId: string | null, onEvent: (event: NodeEvent) => voi
     let isCancelled = false;
 
     try {
-      eventSource = new EventSource(`/tasks/${taskId}/stream`);
+      eventSource = new EventSource(`${BASE_URL}/tasks/${taskId}/stream`);
 
       eventSource.onmessage = (e) => {
         if (isCancelled) return;

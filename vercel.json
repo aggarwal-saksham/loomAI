@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/tasks/:match*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/tasks",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/health",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/((?!api/|tasks|health).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

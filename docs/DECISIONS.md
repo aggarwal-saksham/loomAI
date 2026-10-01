@@ -81,5 +81,10 @@ Why: Strictly enforces the ban list against generic AI apps, fulfills the full P
 Decision: Transition frontend styling to Dark Neumorphism (Tactile Cyber-Deck) featuring soft extruded slate surfaces, debossed/inset terminal input wells, tactile beveled control buttons, and dual light/dark specular shadow depths.
 Why: User requested neumorphism. Dark Neumorphism preserves the dark, dense, technical control-room identity, typography, and strict ban-list constraints specified in DESIGN_SYSTEM.md while creating a tactile, hardware-inspired cyber-console experience.
 
+## 2026-10-02 - Vercel Deployment Configuration
+Decision: Configured fullstack Vercel deployment with root `vercel.json` (Vite build + API rewrites), `api/index.py` (FastAPI ASGI serverless entrypoint), root `requirements.txt`, `/tmp` SQLite database storage detection, and configurable `VITE_API_URL`.
+Why: Fulfills user request to deploy on Vercel. Enables zero-config one-click deployment via the Vercel dashboard or CLI, providing instant hosting for the React frontend and serverless endpoints.
+
+
 
 

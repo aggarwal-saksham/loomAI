@@ -1,6 +1,6 @@
 import { PaginatedResults, TaskGraph, TaskSummary } from './types';
 
-const BASE_URL = '';
+export const BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 export async function createTask(prompt: string): Promise<TaskGraph> {
   const response = await fetch(`${BASE_URL}/tasks`, {
