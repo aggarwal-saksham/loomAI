@@ -16,8 +16,7 @@ import { getExportUrl } from '../../lib/api';
 
 export const ResultsDrawer: React.FC = () => {
   const currentTask = useAppStore((state) => state.currentTask);
-  const results = useAppStore((state) => state.results);
-  const resultsTotal = useAppStore((state) => state.resultsTotal);
+  const allResults = useAppStore((state) => state.allResults);
   const isDrawerOpen = useAppStore((state) => state.isDrawerOpen);
   const setDrawerOpen = useAppStore((state) => state.setDrawerOpen);
   const resultsFilter = useAppStore((state) => state.resultsFilter);
@@ -27,16 +26,27 @@ export const ResultsDrawer: React.FC = () => {
   const [globalFilter, setGlobalFilter] = useState('');
   const [hoveredSourceUrl, setHoveredSourceUrl] = useState<string | null>(null);
 
-  // Extract all distinct field keys from the collected results
+  // Stable counts from complete task results
+  const totalCount = allResults.length;
+  const cleanCount = useMemo(() => allResults.filter((r) => !r.needs_review).length, [allResults]);
+  const reviewCount = useMemo(() => allResults.filter((r) => r.needs_review).length, [allResults]);
+
+  // Instant zero-latency filtered data
+  const filteredData = useMemo(() => {
+    if (resultsFilter === null) return allResults;
+    return allResults.filter((r) => r.needs_review === resultsFilter);
+  }, [allResults, resultsFilter]);
+
+  // Extract all distinct field keys from all results (completely stable across filter switches)
   const fieldKeys = useMemo(() => {
     const keys: string[] = [];
-    results.forEach((row) => {
+    allResults.forEach((row) => {
       Object.keys(row.fields || {}).forEach((k) => {
         if (!keys.includes(k)) keys.push(k);
       });
     });
     return keys;
-  }, [results]);
+  }, [allResults]);
 
   // Construct TanStack table columns dynamically
   const columns = useMemo<ColumnDef<ResultRow>[]>(() => {
@@ -44,15 +54,15 @@ export const ResultsDrawer: React.FC = () => {
       {
         id: 'status_flag',
         header: 'STATUS',
-        size: 90,
+        size: 95,
         cell: ({ row }) => (
           <div className="flex items-center space-x-1.5">
             {row.original.needs_review ? (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-red-950/40 text-node-failed border border-red-900/40">
+              <span className="neu-slot px-2 py-0.5 rounded-full text-[9px] font-mono text-node-failed border border-red-900/40">
                 REVIEW
               </span>
             ) : (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-950/40 text-node-done border border-emerald-900/40">
+              <span className="neu-slot px-2 py-0.5 rounded-full text-[9px] font-mono text-node-done border border-emerald-900/40">
                 VERIFIED
               </span>
             )}
@@ -72,7 +82,7 @@ export const ResultsDrawer: React.FC = () => {
             return <span className="text-gray-600 italic font-mono text-xs">--</span>;
           }
           return (
-            <span className="font-mono text-xs text-gray-300 truncate max-w-[280px] block" title={String(val)}>
+            <span className="font-mono text-xs text-gray-200 truncate max-w-[280px] block" title={String(val)}>
               {String(val)}
             </span>
           );
@@ -88,19 +98,19 @@ export const ResultsDrawer: React.FC = () => {
       cell: ({ row }) => {
         const conf = row.original.confidence;
         const pct = Math.round(conf * 100);
-        let barColor = 'bg-emerald-500';
-        if (pct < 70) barColor = 'bg-amber-500';
-        if (pct < 50) barColor = 'bg-red-500';
+        let barColor = 'bg-emerald-500 shadow-[0_0_6px_rgba(63,167,114,0.8)]';
+        if (pct < 70) barColor = 'bg-amber-500 shadow-[0_0_6px_rgba(255,122,26,0.8)]';
+        if (pct < 50) barColor = 'bg-red-500 shadow-[0_0_6px_rgba(193,85,74,0.8)]';
 
         return (
           <div className="flex items-center space-x-2">
-            <div className="w-16 h-1.5 bg-bg-border rounded-full overflow-hidden">
+            <div className="w-16 h-2 neu-slot rounded-full overflow-hidden p-[1px]">
               <div
-                className={`h-full ${barColor}`}
+                className={`h-full rounded-full ${barColor}`}
                 style={{ width: `${Math.min(pct, 100)}%` }}
               />
             </div>
-            <span className="font-mono text-[11px] text-gray-400">{conf.toFixed(2)}</span>
+            <span className="font-mono text-[11px] text-gray-300 font-semibold">{conf.toFixed(2)}</span>
           </div>
         );
       },
@@ -109,15 +119,15 @@ export const ResultsDrawer: React.FC = () => {
     cols.push({
       id: 'source_link',
       header: 'SOURCE',
-      size: 80,
+      size: 85,
       cell: ({ row }) => (
         <a
           href={row.original.source_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs font-mono text-accent hover:underline flex items-center space-x-1"
+          className="text-xs font-mono text-accent hover:text-accent-hover hover:underline inline-flex items-center space-x-1"
+          onClick={(e) => e.stopPropagation()}
           onMouseEnter={() => setHoveredSourceUrl(row.original.source_url)}
-          onMouseLeave={() => setHoveredSourceUrl(null)}
           title={row.original.source_url}
         >
           <span>source ↗</span>
@@ -129,7 +139,7 @@ export const ResultsDrawer: React.FC = () => {
   }, [fieldKeys]);
 
   const table = useReactTable({
-    data: results,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -150,11 +160,11 @@ export const ResultsDrawer: React.FC = () => {
       {!isDrawerOpen && (
         <button
           onClick={() => setDrawerOpen(true)}
-          className="absolute bottom-4 right-6 z-20 flex items-center space-x-2 bg-bg-surface hover:bg-bg-subtle text-gray-200 px-4 py-2 rounded border border-bg-border shadow-lg transition-all text-xs font-mono"
+          className="absolute bottom-5 right-6 z-20 flex items-center space-x-2.5 neu-btn text-gray-100 px-4 py-2.5 rounded-xl cursor-pointer shadow-neu-panel text-xs font-mono"
         >
-          <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-          <span>SIGNALS DRAWER ({resultsTotal})</span>
-          <span className="text-gray-400">↑</span>
+          <span className="w-2 h-2 rounded-full bg-accent animate-ping shadow-[0_0_6px_#FF7A1A]" />
+          <span className="font-semibold tracking-wide">SIGNALS DRAWER ({totalCount})</span>
+          <span className="text-accent font-bold">↑</span>
         </button>
       )}
 
@@ -166,45 +176,51 @@ export const ResultsDrawer: React.FC = () => {
             animate={{ y: '0%' }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-            className="absolute bottom-0 left-0 right-0 z-30 h-[48vh] bg-bg-surface border-t border-bg-border shadow-2xl flex flex-col"
+            className="absolute bottom-0 left-0 right-0 z-30 h-[48vh] bg-[#141820] border-t border-black/60 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden"
           >
             {/* Drawer Header Rail */}
-            <div className="flex items-center justify-between px-4 py-2.5 bg-bg-subtle/70 border-b border-bg-border select-none">
-              <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-between px-4 py-3 neu-plate border-b border-black/50 select-none shrink-0">
+              <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs font-display font-semibold text-gray-100 tracking-wider">
-                    COLLECTED SIGNALS
+                  <span className="text-xs font-display font-semibold text-gray-100 tracking-wider uppercase">
+                    Collected Signals
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-bg-main text-accent border border-accent/20">
-                    {resultsTotal} rows
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full neu-slot text-accent font-semibold">
+                    {totalCount} rows
                   </span>
                 </div>
 
-                {/* Filter Selector */}
-                <div className="flex items-center space-x-1 bg-bg-main p-0.5 rounded border border-bg-border text-[11px] font-mono">
+                {/* Filter Selector in Debossed Well */}
+                <div className="flex items-center space-x-1 neu-inset p-1 rounded-xl text-[11px] font-mono">
                   <button
                     onClick={() => setResultsFilter(null)}
-                    className={`px-2 py-0.5 rounded transition-colors ${
-                      resultsFilter === null ? 'bg-bg-surface text-gray-100 font-medium' : 'text-gray-400 hover:text-gray-200'
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      resultsFilter === null
+                        ? 'neu-btn text-gray-100 font-semibold shadow-neu-sm'
+                        : 'text-gray-400 hover:text-gray-200'
                     }`}
                   >
-                    All ({resultsTotal})
+                    All ({totalCount})
                   </button>
                   <button
                     onClick={() => setResultsFilter(false)}
-                    className={`px-2 py-0.5 rounded transition-colors ${
-                      resultsFilter === false ? 'bg-bg-surface text-emerald-400 font-medium' : 'text-gray-400 hover:text-gray-200'
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      resultsFilter === false
+                        ? 'neu-btn text-emerald-400 font-semibold shadow-neu-sm'
+                        : 'text-gray-400 hover:text-gray-200'
                     }`}
                   >
-                    Clean
+                    Clean ({cleanCount})
                   </button>
                   <button
                     onClick={() => setResultsFilter(true)}
-                    className={`px-2 py-0.5 rounded transition-colors ${
-                      resultsFilter === true ? 'bg-bg-surface text-node-failed font-medium' : 'text-gray-400 hover:text-gray-200'
+                    className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                      resultsFilter === true
+                        ? 'neu-btn text-node-failed font-semibold shadow-neu-sm'
+                        : 'text-gray-400 hover:text-gray-200'
                     }`}
                   >
-                    Needs Review
+                    Needs Review ({reviewCount})
                   </button>
                 </div>
               </div>
@@ -216,31 +232,31 @@ export const ResultsDrawer: React.FC = () => {
                   placeholder="filter columns..."
                   value={globalFilter}
                   onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="bg-bg-main border border-bg-border rounded px-2.5 py-1 text-xs font-mono text-gray-200 focus:outline-none focus:border-accent w-48 placeholder-gray-600"
+                  className="neu-input rounded-lg px-3 py-1.5 text-xs font-mono text-gray-200 focus:outline-none w-48 placeholder-gray-500"
                 />
 
                 {/* Export Buttons */}
                 <a
                   href={getExportUrl(currentTask.id, 'csv')}
                   download
-                  className="flex items-center space-x-1 bg-bg-main hover:bg-bg-border text-gray-300 hover:text-gray-100 px-2.5 py-1 rounded border border-bg-border text-xs font-mono transition-colors"
+                  className="flex items-center space-x-1.5 neu-btn text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-mono transition-transform cursor-pointer"
                 >
                   <span>CSV</span>
-                  <span className="text-[10px] text-gray-500">↓</span>
+                  <span className="text-[10px] text-accent">↓</span>
                 </a>
                 <a
                   href={getExportUrl(currentTask.id, 'json')}
                   download
-                  className="flex items-center space-x-1 bg-bg-main hover:bg-bg-border text-gray-300 hover:text-gray-100 px-2.5 py-1 rounded border border-bg-border text-xs font-mono transition-colors"
+                  className="flex items-center space-x-1.5 neu-btn text-gray-300 hover:text-white px-3 py-1.5 rounded-lg text-xs font-mono transition-transform cursor-pointer"
                 >
                   <span>JSON</span>
-                  <span className="text-[10px] text-gray-500">↓</span>
+                  <span className="text-[10px] text-accent">↓</span>
                 </a>
 
                 {/* Close Drawer Button */}
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="text-gray-400 hover:text-gray-100 p-1 rounded hover:bg-bg-border ml-2"
+                  className="neu-btn text-gray-400 hover:text-white p-1.5 rounded-lg ml-2 cursor-pointer"
                   title="Collapse Drawer"
                 >
                   ✕
@@ -248,73 +264,107 @@ export const ResultsDrawer: React.FC = () => {
               </div>
             </div>
 
-            {/* Source URL Preview Tooltip Bar (per DESIGN_SYSTEM.md) */}
-            {hoveredSourceUrl && (
-              <div className="bg-bg-main px-4 py-1 text-[11px] font-mono text-gray-400 border-b border-bg-border flex items-center space-x-2 truncate">
-                <span className="text-accent uppercase tracking-wider text-[10px]">Source Target:</span>
-                <span className="text-gray-200 truncate">{hoveredSourceUrl}</span>
-              </div>
-            )}
-
-            {/* Table Container */}
-            <div className="flex-1 overflow-auto bg-bg-main">
-              {results.length === 0 ? (
-                <div className="w-full h-full flex flex-col items-center justify-center text-center p-6 select-none">
-                  <div className="text-xs font-mono text-gray-500 uppercase tracking-widest mb-1">
-                    No signals collected yet
-                  </div>
-                  <div className="text-[11px] font-mono text-gray-600">
-                    Execution in progress or filters yielded no matching records.
-                  </div>
-                </div>
-              ) : (
-                <table className="w-full border-collapse text-left">
-                  <thead className="sticky top-0 bg-bg-subtle border-b border-bg-border z-10">
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <tr key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <th
-                            key={header.id}
-                            className="px-3 py-2 text-[10px] font-display font-semibold text-gray-400 tracking-wider uppercase border-r border-bg-border/30 last:border-r-0 cursor-pointer select-none hover:text-gray-200"
-                            onClick={header.column.getToggleSortingHandler()}
-                          >
-                            <div className="flex items-center space-x-1">
-                              <span>
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                              </span>
-                              <span>
-                                {{
-                                  asc: ' ↑',
-                                  desc: ' ↓',
-                                }[header.column.getIsSorted() as string] ?? null}
-                              </span>
-                            </div>
-                          </th>
-                        ))}
-                      </tr>
-                    ))}
-                  </thead>
-                  <tbody>
-                    {table.getRowModel().rows.map((row, idx) => (
+            {/* Stable Table Container */}
+            <div
+              className="flex-1 overflow-auto neu-inset-deep"
+              onMouseLeave={() => setHoveredSourceUrl(null)}
+            >
+              <table className="w-full border-collapse text-left">
+                <thead className="sticky top-0 neu-plate border-b border-black/60 z-10">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th
+                          key={header.id}
+                          className="px-3.5 py-2.5 text-[10px] font-display font-semibold text-gray-300 tracking-wider uppercase border-r border-black/40 last:border-r-0 cursor-pointer select-none hover:text-accent transition-colors"
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <div className="flex items-center space-x-1">
+                            <span>
+                              {flexRender(header.column.columnDef.header, header.getContext())}
+                            </span>
+                            <span>
+                              {{
+                                asc: ' ↑',
+                                desc: ' ↓',
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={Math.max(columns.length, 1)}
+                        className="px-6 py-14 text-center text-xs font-mono select-none"
+                      >
+                        <div className="flex flex-col items-center justify-center space-y-1.5">
+                          <span className="text-gray-300 font-semibold uppercase tracking-wider text-xs">
+                            {resultsFilter === true
+                              ? 'No signals flagged for review'
+                              : resultsFilter === false
+                              ? 'No clean signals recorded'
+                              : 'No signals collected yet'}
+                          </span>
+                          <span className="text-[11px] text-gray-500">
+                            {resultsFilter === true
+                              ? 'All collected signals satisfied required validation constraints and confidence thresholds.'
+                              : 'Execution in progress or filters returned zero matching items.'}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    table.getRowModel().rows.map((row, idx) => (
                       <tr
                         key={row.id}
-                        className={`border-b border-bg-border/30 transition-colors hover:bg-bg-subtle/80 ${
-                          idx % 2 === 0 ? 'bg-bg-main' : 'bg-[#101317]'
+                        onMouseEnter={() => setHoveredSourceUrl(row.original.source_url)}
+                        className={`border-b border-black/30 transition-colors hover:bg-[#1B212B] ${
+                          idx % 2 === 0 ? 'bg-[#0E1116]' : 'bg-[#12151C]'
                         }`}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
-                            className="px-3 py-2 border-r border-bg-border/20 last:border-r-0 whitespace-nowrap"
+                            className="px-3.5 py-2 border-r border-black/20 last:border-r-0 whitespace-nowrap"
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
                         ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Persistent Telemetry Status Footer (Never shifts table height!) */}
+            <div className="h-7 px-4 neu-plate border-t border-black/50 flex items-center justify-between text-[11px] font-mono select-none shrink-0">
+              <div className="flex items-center space-x-2 truncate max-w-3xl">
+                <span className="text-accent uppercase tracking-wider text-[10px] font-semibold">Origin Telemetry:</span>
+                <span className="text-gray-300 truncate">
+                  {hoveredSourceUrl ? (
+                    <a
+                      href={hoveredSourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-accent hover:underline font-mono text-[11px]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {hoveredSourceUrl}
+                    </a>
+                  ) : (
+                    <span className="text-gray-500 italic">Hover over any record or source link to view origin URL</span>
+                  )}
+                </span>
+              </div>
+              <div className="text-[10px] text-gray-500 font-mono shrink-0 uppercase tracking-widest pl-2">
+                SIGNAL ORIGIN LINK
+              </div>
             </div>
           </motion.div>
         )}

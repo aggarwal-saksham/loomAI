@@ -5,6 +5,7 @@ import * as api from '../lib/api';
 interface AppState {
   currentTask: TaskGraph | null;
   taskList: TaskSummary[];
+  allResults: ResultRow[];
   results: ResultRow[];
   resultsTotal: number;
   resultsPage: number;
@@ -36,6 +37,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set, get) => ({
   currentTask: null,
   taskList: [],
+  allResults: [],
   results: [],
   resultsTotal: 0,
   resultsPage: 1,
@@ -50,10 +52,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setLeftRailOpen: (open) => set({ isLeftRailOpen: open }),
   setDrawerOpen: (open) => set({ isDrawerOpen: open }),
-  setResultsFilter: (filter) => {
-    set({ resultsFilter: filter, resultsPage: 1 });
-    get().loadResults(1);
-  },
+  setResultsFilter: (filter) => set({ resultsFilter: filter }),
   setResultsSearch: (query) => set({ resultsSearch: query }),
   setCurrentTask: (task) => set({ currentTask: task }),
   clearError: () => set({ error: null }),
@@ -121,7 +120,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (task.status === 'done') {
         get().loadResults(1);
       } else {
-        set({ results: [], resultsTotal: 0 });
+        set({ allResults: [], results: [], resultsTotal: 0 });
       }
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
@@ -129,7 +128,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   submitPrompt: async (prompt) => {
-    set({ isCreating: true, error: null, results: [], resultsTotal: 0, isDrawerOpen: false });
+    set({ isCreating: true, error: null, allResults: [], results: [], resultsTotal: 0, isDrawerOpen: false });
     try {
       const graph = await api.createTask(prompt);
       set({ currentTask: graph, isCreating: false });
@@ -164,7 +163,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { currentTask } = get();
     if (!currentTask) return;
 
-    set({ isRunning: true, error: null, results: [], resultsTotal: 0, isDrawerOpen: false });
+    set({ isRunning: true, error: null, allResults: [], results: [], resultsTotal: 0, isDrawerOpen: false });
     try {
       await api.rerunTask(currentTask.id);
       // Reset local node statuses
@@ -188,21 +187,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  loadResults: async (page = 1) => {
-    const { currentTask, resultsFilter } = get();
+  loadResults: async (_page = 1) => {
+    const { currentTask } = get();
     if (!currentTask) return;
 
     try {
-      const data = await api.getTaskResults(
-        currentTask.id,
-        page,
-        50,
-        resultsFilter === null ? undefined : resultsFilter
-      );
+      const data = await api.getTaskResults(currentTask.id, 1, 100);
       set({
+        allResults: data.results,
         results: data.results,
         resultsTotal: data.total,
-        resultsPage: data.page,
+        resultsPage: 1,
       });
     } catch (err: any) {
       console.error('Failed to load results:', err);

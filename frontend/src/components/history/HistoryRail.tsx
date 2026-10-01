@@ -23,10 +23,10 @@ export const HistoryRail: React.FC = () => {
 
   if (!isLeftRailOpen) {
     return (
-      <div className="w-12 h-full bg-bg-surface border-r border-bg-border flex flex-col items-center py-4 select-none z-20">
+      <div className="w-12 h-full neu-plate border-r border-black/40 flex flex-col items-center py-4 select-none z-20">
         <button
           onClick={() => setLeftRailOpen(true)}
-          className="p-2 rounded hover:bg-bg-subtle text-gray-400 hover:text-gray-100 transition-colors"
+          className="neu-btn p-2 rounded-lg text-gray-400 hover:text-gray-100 cursor-pointer"
           title="Expand Mission History"
         >
           <span className="text-sm">≡</span>
@@ -39,20 +39,20 @@ export const HistoryRail: React.FC = () => {
   }
 
   return (
-    <div className="w-72 h-full bg-bg-surface border-r border-bg-border flex flex-col select-none z-20 transition-all">
+    <div className="w-72 h-full bg-[#13161D] border-r border-black/50 flex flex-col select-none z-20 transition-all shadow-[4px_0_12px_rgba(0,0,0,0.5)]">
       {/* Rail Header */}
-      <div className="p-3 border-b border-bg-border flex items-center justify-between">
+      <div className="p-3.5 neu-plate border-b border-black/40 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <span className="text-xs font-display font-semibold tracking-wider text-gray-200 uppercase">
+          <span className="text-xs font-display font-semibold tracking-wider text-gray-100 uppercase">
             Mission History
           </span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-bg-main text-gray-400 border border-bg-border">
+          <span className="neu-slot text-[10px] font-mono px-2 py-0.5 rounded-full text-gray-400">
             {taskList.length}
           </span>
         </div>
         <button
           onClick={() => setLeftRailOpen(false)}
-          className="p-1 rounded hover:bg-bg-subtle text-gray-400 hover:text-gray-100 transition-colors text-xs"
+          className="neu-btn p-1.5 rounded-md text-gray-400 hover:text-gray-100 text-xs cursor-pointer"
           title="Collapse Rail"
         >
           ‹
@@ -60,7 +60,7 @@ export const HistoryRail: React.FC = () => {
       </div>
 
       {/* Task List */}
-      <div className="flex-1 overflow-y-auto divide-y divide-bg-border/30">
+      <div className="flex-1 overflow-y-auto p-2 space-y-2 neu-inset-deep">
         {taskList.length === 0 ? (
           <div className="p-4 text-center text-xs font-mono text-gray-500">
             No past missions recorded.
@@ -78,34 +78,34 @@ export const HistoryRail: React.FC = () => {
               <div
                 key={task.id}
                 onClick={() => selectTask(task.id)}
-                className={`p-3 cursor-pointer transition-colors text-left group ${
+                className={`p-3 rounded-xl cursor-pointer transition-all text-left group ${
                   isSelected
-                    ? 'bg-bg-subtle border-l-2 border-accent'
-                    : 'hover:bg-bg-subtle/50 border-l-2 border-transparent'
+                    ? 'neu-card border-l-4 border-l-accent shadow-neu-card scale-[1.01]'
+                    : 'bg-[#12151B] hover:neu-card border border-white/[0.03] text-gray-300'
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-1.5">
                   <span
-                    className={`text-[9px] font-mono px-1.5 py-0.5 rounded border uppercase ${status.cls}`}
+                    className={`neu-slot text-[9px] font-mono px-2 py-0.5 rounded-full uppercase font-medium ${status.cls}`}
                   >
                     {status.label}
                   </span>
                   <span className="text-[10px] font-mono text-gray-500">{dateStr}</span>
                 </div>
 
-                <div className="text-xs font-mono text-gray-300 line-clamp-2 mb-2 group-hover:text-gray-100">
+                <div className="text-xs font-mono text-gray-200 line-clamp-2 mb-2 group-hover:text-white leading-relaxed">
                   {task.prompt}
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] font-mono text-gray-500">
-                  <span>{task.result_count} signals</span>
+                <div className="flex items-center justify-between text-[10px] font-mono text-gray-400">
+                  <span className="neu-slot px-2 py-0.5 rounded-md text-gray-400">{task.result_count} signals</span>
                   {isSelected && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         rerunTask();
                       }}
-                      className="px-1.5 py-0.5 rounded bg-bg-main hover:bg-bg-border text-accent hover:text-accent-hover border border-accent/20 transition-colors"
+                      className="neu-btn px-2 py-0.5 rounded text-accent hover:text-white transition-colors cursor-pointer"
                       title="Re-run Mission"
                     >
                       ↺ Re-run

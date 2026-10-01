@@ -8,35 +8,150 @@
 
 body {
   margin: 0;
-  background-color: #0B0D10;
+  background-color: #0D1015;
   color: #E2E8F0;
   font-family: 'JetBrains Mono', monospace;
   overflow: hidden;
   user-select: none;
 }
 
-/* Custom scrollbars */
+/* Neumorphic Hardware Tactile Utilities */
+@layer components {
+  /* Raised Plate / Header / Toolbar */
+  .neu-plate {
+    background: linear-gradient(180deg, #181D25 0%, #14171E 100%);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.8);
+  }
+
+  /* Raised Tactile Card / Node */
+  .neu-card {
+    background: linear-gradient(145deg, #181D24, #12151B);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Sunken / Inset Well (inputs, display bays) */
+  .neu-inset {
+    background: #090B0E;
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.85), inset -2px -2px 5px rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* Shallow Inset Well */
+  .neu-inset-shallow {
+    background: #0B0E12;
+    box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.75), inset -1px -1px 3px rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* Deep Sunken Well (code displays, canvas bed) */
+  .neu-inset-deep {
+    background: #080A0D;
+    box-shadow: inset 5px 5px 12px rgba(0, 0, 0, 0.9), inset -3px -3px 8px rgba(255, 255, 255, 0.025);
+  }
+
+  /* Tactile Mechanical Push Button */
+  .neu-btn {
+    background: linear-gradient(145deg, #1B2028, #13171E);
+    box-shadow: 3px 3px 7px rgba(0, 0, 0, 0.65), -2px -2px 5px rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .neu-btn:hover:not(:disabled) {
+    background: linear-gradient(145deg, #1F252F, #161A22);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.75), -2px -2px 6px rgba(255, 255, 255, 0.07);
+    transform: translateY(-1px);
+  }
+  .neu-btn:active:not(:disabled) {
+    background: #11141A;
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.85), inset -1px -1px 3px rgba(255, 255, 255, 0.03);
+    transform: translateY(1px);
+  }
+
+  /* Primary Accent Tactile Button */
+  .neu-btn-accent {
+    background: linear-gradient(145deg, #FF8826, #E06305);
+    box-shadow: 4px 4px 11px rgba(0, 0, 0, 0.7), -2px -2px 6px rgba(255, 255, 255, 0.12), 0 0 16px rgba(255, 122, 26, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .neu-btn-accent:hover:not(:disabled) {
+    background: linear-gradient(145deg, #FF9438, #ED6D0B);
+    box-shadow: 5px 5px 14px rgba(0, 0, 0, 0.75), -2px -2px 8px rgba(255, 255, 255, 0.2), 0 0 22px rgba(255, 122, 26, 0.55);
+    transform: translateY(-1px);
+  }
+  .neu-btn-accent:active:not(:disabled) {
+    background: linear-gradient(145deg, #D45B00, #F77514);
+    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.65), inset -1px -1px 3px rgba(255, 255, 255, 0.15);
+    transform: translateY(1px);
+  }
+
+  /* Debossed Input Well */
+  .neu-input {
+    background: #090B0E;
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.85), inset -2px -2px 5px rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.2s ease-in-out;
+  }
+  .neu-input:focus {
+    box-shadow: inset 3px 3px 6px rgba(0, 0, 0, 0.9), inset -2px -2px 5px rgba(255, 255, 255, 0.04), 0 0 10px rgba(255, 122, 26, 0.3);
+    border-color: rgba(255, 122, 26, 0.45);
+  }
+
+  /* Tactile Chip (extruded indicator) */
+  .neu-chip {
+    background: linear-gradient(145deg, #181D24, #12151B);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.55), -1px -1px 3px rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Recessed Slot / Badge */
+  .neu-slot {
+    background: #0B0E12;
+    box-shadow: inset 1.5px 1.5px 3px rgba(0, 0, 0, 0.8), inset -1px -1px 2px rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  /* Hardware Groove Separator */
+  .neu-groove-h {
+    height: 2px;
+    background: #0A0C0F;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .neu-groove-v {
+    width: 2px;
+    background: #0A0C0F;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Custom Neumorphic Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0D10;
+  background: #090B0E;
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2B3038;
-  border-radius: 3px;
+  background: linear-gradient(145deg, #202632, #161A22);
+  border-radius: 4px;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6), inset 1px 1px 2px rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4A4F57;
+  background: linear-gradient(145deg, #272F3E, #1C222D);
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8), inset 1px 1px 2px rgba(255, 255, 255, 0.12);
 }
 
 /* React Flow custom styling */
 .react-flow__background {
-  background-color: #0B0D10 !important;
+  background-color: #080A0E !important;
 }
 
 .react-flow__attribution {
@@ -55,36 +170,39 @@ body {
 
 .edge-running path {
   stroke: #FF7A1A !important;
-  stroke-width: 2px !important;
+  stroke-width: 2.5px !important;
   stroke-dasharray: 6, 6;
+  filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.6));
   animation: flowDash 1s linear infinite;
 }
 
 .edge-done path {
   stroke: #3FA772 !important;
   stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 3px rgba(63, 167, 114, 0.4));
 }
 
 .edge-pending path {
-  stroke: #2B3038 !important;
+  stroke: #252B37 !important;
   stroke-width: 1.5px !important;
 }
 
 .edge-failed path {
   stroke: #C1554A !important;
   stroke-width: 1.5px !important;
+  filter: drop-shadow(0 0 4px rgba(193, 85, 74, 0.5));
 }
 
 /* Node glow pulse */
 @keyframes nodePulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(255, 122, 26, 0.4);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.05), 0 0 0 0 rgba(255, 122, 26, 0.5);
   }
   70% {
-    box-shadow: 0 0 0 8px rgba(255, 122, 26, 0);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.05), 0 0 0 10px rgba(255, 122, 26, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(255, 122, 26, 0);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.05), 0 0 0 0 rgba(255, 122, 26, 0);
   }
 }
 
@@ -94,11 +212,11 @@ body {
 
 @keyframes nodeDoneGlow {
   0% {
-    box-shadow: 0 0 15px rgba(63, 167, 114, 0.6);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.05), 0 0 20px rgba(63, 167, 114, 0.8);
     transform: scale(1.02);
   }
   100% {
-    box-shadow: 0 0 0 rgba(63, 167, 114, 0);
+    box-shadow: 6px 6px 14px rgba(0, 0, 0, 0.7), -3px -3px 8px rgba(255, 255, 255, 0.045);
     transform: scale(1);
   }
 }
@@ -106,3 +224,4 @@ body {
 .node-just-done {
   animation: nodeDoneGlow 0.8s ease-out;
 }
+

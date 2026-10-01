@@ -41,7 +41,7 @@ export const App: React.FC = () => {
         <HistoryRail />
 
         {/* Zone 2: Dominant Center Graph Canvas */}
-        <main className="flex-1 relative h-full w-full overflow-hidden bg-bg-main">
+        <main className="flex-1 relative h-full w-full overflow-hidden bg-bg-main neu-inset-deep">
           <WorkflowCanvas />
 
           {/* Zone 3: Bottom Results Drawer (spring physics) */}

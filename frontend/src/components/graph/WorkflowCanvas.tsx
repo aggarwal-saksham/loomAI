@@ -77,9 +77,11 @@ export const WorkflowCanvas: React.FC = () => {
 
   if (isCreating) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-bg-main text-center p-6 select-none">
-        <div className="w-12 h-12 border-2 border-accent/20 border-t-accent rounded-full animate-spin mb-4" />
-        <div className="text-sm font-display text-gray-200 uppercase tracking-widest mb-1">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-bg-main neu-inset-deep text-center p-6 select-none">
+        <div className="w-16 h-16 neu-inset rounded-2xl flex items-center justify-center mb-5 border border-white/5 shadow-neu-inset">
+          <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+        </div>
+        <div className="text-sm font-display font-semibold text-gray-100 uppercase tracking-widest mb-1.5">
           Synthesizing Workflow DAG
         </div>
         <div className="text-xs font-mono text-gray-500">
@@ -91,20 +93,24 @@ export const WorkflowCanvas: React.FC = () => {
 
   if (!currentTask) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-bg-main text-center p-6 select-none border border-dashed border-bg-border/40 rounded-lg m-2">
-        <div className="text-3xl text-gray-600 mb-3 font-mono">⧉</div>
-        <div className="text-sm font-display text-gray-400 uppercase tracking-widest mb-1">
-          Signal Intelligence Terminal Offline
-        </div>
-        <div className="text-xs font-mono text-gray-600 max-w-md">
-          Enter a data intelligence prompt above to synthesize an automated DAG pipeline, or select a previous run from the history rail.
+      <div className="w-full h-full flex flex-col items-center justify-center bg-bg-main neu-inset-deep text-center p-6 select-none">
+        <div className="p-8 rounded-2xl neu-card max-w-md flex flex-col items-center border border-white/5">
+          <div className="w-14 h-14 neu-slot rounded-xl flex items-center justify-center text-2xl text-accent/80 mb-4 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.8)]">
+            ⧉
+          </div>
+          <div className="text-sm font-display font-semibold text-gray-100 uppercase tracking-widest mb-2">
+            Tactile Terminal Offline
+          </div>
+          <div className="text-xs font-mono text-gray-400 leading-relaxed">
+            Enter a data intelligence prompt above to synthesize an automated DAG pipeline, or select a previous run from the history rail.
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full relative bg-bg-main overflow-hidden">
+    <div className="w-full h-full relative bg-bg-main neu-inset-deep overflow-hidden">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -119,14 +125,14 @@ export const WorkflowCanvas: React.FC = () => {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={20}
-          size={1}
-          color="#222730"
-          className="bg-bg-main"
+          gap={24}
+          size={1.2}
+          color="#1E2430"
+          className="bg-transparent"
         />
         <Controls
           showInteractive={false}
-          className="!bg-bg-surface !border-bg-border !fill-gray-300 [&>button]:!bg-bg-surface [&>button]:!border-bg-border [&>button:hover]:!bg-bg-subtle"
+          className="!bg-[#161A22] !border !border-white/5 !rounded-lg !shadow-neu-card !fill-gray-300 [&>button]:!bg-[#1A1F29] [&>button]:!border-b [&>button]:!border-black/50 [&>button]:!text-gray-300 [&>button:hover]:!bg-[#222835]"
         />
       </ReactFlow>
     </div>

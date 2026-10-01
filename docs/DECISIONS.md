@@ -77,4 +77,9 @@ Why: Fulfills the ARCHITECTURE.md API specification, validates DAG topological e
 Decision: Built the React/TypeScript/Vite frontend following the control-room terminal aesthetic from DESIGN_SYSTEM.md: 3-zone layout (collapsible left rail for mission history, center canvas with custom @xyflow nodes and flowing dashes, bottom spring drawer for TanStack table signals), and automatically seed 2 realistic demo tasks at backend startup for offline evaluation.
 Why: Strictly enforces the ban list against generic AI apps, fulfills the full PRD user journey, and allows the platform to be evaluated offline without incurring API quota burn.
 
+## 2026-10-02 - UI Theme: Dark Neumorphism (Tactile Cyber-Deck)
+Decision: Transition frontend styling to Dark Neumorphism (Tactile Cyber-Deck) featuring soft extruded slate surfaces, debossed/inset terminal input wells, tactile beveled control buttons, and dual light/dark specular shadow depths.
+Why: User requested neumorphism. Dark Neumorphism preserves the dark, dense, technical control-room identity, typography, and strict ban-list constraints specified in DESIGN_SYSTEM.md while creating a tactile, hardware-inspired cyber-console experience.
+
+
 

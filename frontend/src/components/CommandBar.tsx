@@ -27,18 +27,18 @@ export const CommandBar: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-bg-surface border-b border-bg-border z-20 flex flex-col select-none">
+    <div className="w-full neu-plate z-20 flex flex-col select-none relative">
       {/* Upper Terminal Bar */}
-      <div className="h-12 px-4 flex items-center justify-between border-b border-bg-border/40">
+      <div className="h-12 px-4 flex items-center justify-between border-b border-black/40">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 bg-accent rounded-sm rotate-45" />
+          <div className="flex items-center space-x-2 neu-chip px-2.5 py-1 rounded-md">
+            <span className="w-2.5 h-2.5 bg-accent rounded-sm rotate-45 shadow-[0_0_8px_rgba(255,122,26,0.6)]" />
             <span className="font-display font-bold text-sm tracking-wider text-gray-100 uppercase">
               loom<span className="text-accent">AI</span>
             </span>
           </div>
-          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest border-l border-bg-border pl-3">
-            SIGNAL TERMINAL v0.1
+          <span className="text-[10px] font-mono text-gray-500 uppercase tracking-widest pl-2">
+            TACTILE TERMINAL v0.2
           </span>
         </div>
 
@@ -48,60 +48,73 @@ export const CommandBar: React.FC = () => {
               <span className="text-gray-500">TASK:</span>
               <span className="text-gray-300 truncate max-w-xs">{currentTask.id.slice(0, 8)}...</span>
               <span
-                className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase border ${
+                className={`neu-slot px-2.5 py-1 rounded text-[10px] font-mono uppercase font-semibold flex items-center space-x-1.5 ${
                   currentTask.status === 'running'
-                    ? 'bg-amber-950/40 text-accent border-accent/40 animate-pulse'
+                    ? 'text-accent shadow-[0_0_10px_rgba(255,122,26,0.3)] animate-pulse'
                     : currentTask.status === 'done'
-                    ? 'bg-emerald-950/40 text-node-done border-emerald-800/40'
+                    ? 'text-node-done shadow-[0_0_10px_rgba(63,167,114,0.25)]'
                     : currentTask.status === 'failed'
-                    ? 'bg-red-950/40 text-node-failed border-red-800/40'
-                    : 'bg-gray-800 text-gray-400 border-gray-700'
+                    ? 'text-node-failed shadow-[0_0_10px_rgba(193,85,74,0.3)]'
+                    : 'text-gray-400'
                 }`}
               >
-                {currentTask.status}
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    currentTask.status === 'running'
+                      ? 'bg-accent animate-ping'
+                      : currentTask.status === 'done'
+                      ? 'bg-node-done'
+                      : currentTask.status === 'failed'
+                      ? 'bg-node-failed'
+                      : 'bg-gray-500'
+                  }`}
+                />
+                <span>{currentTask.status}</span>
               </span>
               <button
                 onClick={() => rerunTask()}
                 disabled={isRunning}
-                className="px-2 py-0.5 rounded bg-bg-main hover:bg-bg-border text-gray-300 hover:text-white border border-bg-border text-[11px] font-mono disabled:opacity-50"
+                className="neu-btn px-2.5 py-1 rounded text-gray-300 hover:text-white text-[11px] font-mono disabled:opacity-40"
               >
                 ↺ Rerun
               </button>
             </div>
           )}
 
-          <div className="flex items-center space-x-1.5 px-2 py-1 bg-bg-main rounded border border-bg-border text-[10px] font-mono text-gray-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-node-done" />
-            <span>CONNECTORS ONLINE</span>
+          <div className="neu-slot flex items-center space-x-1.5 px-2.5 py-1 rounded text-[10px] font-mono text-gray-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-node-done shadow-[0_0_6px_rgba(63,167,114,0.8)]" />
+            <span className="tracking-wide">CONNECTORS ONLINE</span>
           </div>
         </div>
       </div>
 
       {/* Main Command Input Row */}
-      <form onSubmit={handleSubmit} className="p-2.5 px-4 flex items-center space-x-2 bg-bg-surface">
-        <span className="text-xs font-mono text-accent select-none font-bold">&gt;&gt;</span>
-        <input
-          type="text"
-          value={promptText}
-          onChange={(e) => setPromptText(e.target.value)}
-          placeholder="Mission directive: e.g. Find 15 companies that sponsor student hackathons in fintech..."
-          disabled={isCreating || isRunning}
-          className="flex-1 bg-bg-main border border-bg-border focus:border-accent rounded px-3 py-1.5 text-xs font-mono text-gray-200 placeholder-gray-600 focus:outline-none disabled:opacity-50 transition-colors"
-        />
+      <form onSubmit={handleSubmit} className="p-3 px-4 flex items-center space-x-3 bg-bg-surface/50">
+        <div className="flex-1 flex items-center space-x-2 neu-input rounded-lg px-3 py-1.5">
+          <span className="text-xs font-mono text-accent select-none font-bold tracking-tight">&gt;&gt;</span>
+          <input
+            type="text"
+            value={promptText}
+            onChange={(e) => setPromptText(e.target.value)}
+            placeholder="Mission directive: e.g. Find 15 companies that sponsor student hackathons in fintech..."
+            disabled={isCreating || isRunning}
+            className="flex-1 bg-transparent text-xs font-mono text-gray-100 placeholder-gray-500 focus:outline-none disabled:opacity-50"
+          />
+        </div>
 
         <button
           type="submit"
           disabled={!promptText.trim() || isCreating || isRunning}
-          className="bg-accent hover:bg-accent-hover text-black font-display font-semibold text-xs px-4 py-1.5 rounded disabled:opacity-40 disabled:hover:bg-accent transition-colors flex items-center space-x-1.5"
+          className="neu-btn-accent text-black font-display font-semibold text-xs px-5 py-2 rounded-lg disabled:opacity-40 disabled:pointer-events-none flex items-center space-x-2 cursor-pointer"
         >
           {isCreating ? (
             <>
-              <span className="inline-block w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              <span className="inline-block w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span>PLANNING...</span>
             </>
           ) : isRunning ? (
             <>
-              <span className="inline-block w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              <span className="inline-block w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               <span>EXECUTING...</span>
             </>
           ) : (
@@ -111,14 +124,14 @@ export const CommandBar: React.FC = () => {
       </form>
 
       {/* Quick Prompts Bar */}
-      <div className="px-4 pb-2 flex items-center space-x-2 text-[10px] font-mono text-gray-500 overflow-x-auto">
-        <span className="uppercase text-gray-600 font-bold shrink-0">Preset Directives:</span>
+      <div className="px-4 pb-2.5 flex items-center space-x-2 text-[10px] font-mono text-gray-500 overflow-x-auto">
+        <span className="uppercase text-gray-500 font-bold shrink-0 tracking-wider">Directives:</span>
         {QUICK_PROMPTS.map((qp, i) => (
           <button
             key={i}
             type="button"
             onClick={() => handleSelectQuickPrompt(qp)}
-            className="shrink-0 px-2 py-0.5 rounded bg-bg-main hover:bg-bg-border text-gray-400 hover:text-gray-200 border border-bg-border/60 transition-colors truncate max-w-sm"
+            className="neu-btn shrink-0 px-2.5 py-1 rounded text-gray-400 hover:text-gray-100 truncate max-w-sm transition-transform cursor-pointer"
           >
             {qp}
           </button>
@@ -127,9 +140,12 @@ export const CommandBar: React.FC = () => {
 
       {/* Error Alert Banner */}
       {error && (
-        <div className="px-4 py-1.5 bg-red-950/50 border-t border-red-900/50 text-node-failed text-xs font-mono flex items-center justify-between">
-          <span>MISSION DIRECTIVE ERROR: {error}</span>
-          <button onClick={clearError} className="text-gray-400 hover:text-white ml-4">
+        <div className="px-4 py-2 bg-red-950/60 border-t border-red-900/60 text-node-failed text-xs font-mono flex items-center justify-between shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+          <span className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-node-failed animate-ping" />
+            <span>MISSION DIRECTIVE ERROR: {error}</span>
+          </span>
+          <button onClick={clearError} className="neu-btn text-gray-400 hover:text-white px-2 py-0.5 rounded text-[11px]">
             ✕
           </button>
         </div>
