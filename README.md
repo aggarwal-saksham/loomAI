@@ -2,6 +2,8 @@
 
 > **Turn any data request into a live, visual workflow DAG that collects, cleans, and exports source-backed data.**
 
+🌐 **Live Application**: [https://loomai-sooty.vercel.app](https://loomai-sooty.vercel.app)
+
 ---
 
 ## 🎬 Demo & Tutorial
